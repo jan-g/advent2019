@@ -1,0 +1,5 @@
+.stack-work/
+advent2019.cabal
+*~
+/.idea/
+*.iml
