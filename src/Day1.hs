@@ -36,12 +36,9 @@ calc1 ns = ns
          & map (subtract 2)
          & sum
 
-day1 :: [String] -> IO ()
-day1 ls = do
-  let ans = ls
+day1 ls = ls
           & map (read :: String -> Int)
           & calc1
-  putStrLn (show ans)
 
 
 totalFuel :: Int -> Int
@@ -51,8 +48,6 @@ totalFuel n = n
             & drop 1
             & sum
 
-day1b ls = do
-  let ans = map read ls
-          & map totalFuel
-          & sum
-  putStrLn (show ans)
+day1b ls = map read ls
+         & map totalFuel
+         & sum
