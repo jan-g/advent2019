@@ -53,7 +53,7 @@ Here are a few more examples:
 What is the Manhattan distance from the central port to the closest intersection?
 -}
 
-type Axis = Int
+type Axis = Integer
 type Coord = (Axis, Axis)
 type Path = Set.Set Coord
 

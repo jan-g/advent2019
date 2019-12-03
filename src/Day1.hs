@@ -40,7 +40,6 @@ day1 ls = ls
           & map (read :: String -> Int)
           & calc1
 
-
 totalFuel :: Int -> Int
 totalFuel n = n
             & iterate (\n -> n `div` 3 - 2)
@@ -51,3 +50,4 @@ totalFuel n = n
 day1b ls = map read ls
          & map totalFuel
          & sum
+         

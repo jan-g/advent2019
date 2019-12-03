@@ -3,6 +3,7 @@ module Day2 where
 import Data.Function ((&))
 import Data.List.Split
 import Data.Array
+import Lib
 
 {-
 --- Day 2: 1202 Program Alarm ---
@@ -83,10 +84,6 @@ parse ns = ns
          & splitOn ","
          & map (read :: String -> Int)
          & makeArray
-
-
-makeArray :: [a] -> Array Int a
-makeArray ns = listArray (0, length ns - 1) ns
 
 
 day2 ls =
