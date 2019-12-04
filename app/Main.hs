@@ -6,6 +6,7 @@ import Lib
 import Day1
 import Day2
 import Day3
+import Day4
 
 main :: IO ()
 main = do
@@ -17,6 +18,8 @@ main = do
                  "day2b" -> show . day2b
                  "day3" -> show . day3
                  "day3b" -> show . day3b
+                 "day4" -> show . day4
+                 "day4b" -> show . day4b
       source = args !! 1
   ls <- loadLines source
   putStrLn (action ls)

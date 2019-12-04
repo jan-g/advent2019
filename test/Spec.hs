@@ -6,6 +6,7 @@ import Data.Function ((&))
 
 import qualified Day2
 import qualified Day3
+import qualified Day4
 
 
 main :: IO ()
@@ -40,3 +41,18 @@ main = hspec $ do
                  ,"U98,R91,D20,R16,D67,R40,U7,R15,U6,R7"
                  ] `shouldBe` 410
 
+  describe "Day4" $ do
+    it "checks 111111" $ do
+      Day4.criterion 111111 `shouldBe` True
+    it "checks 223450" $ do
+      Day4.criterion 223450 `shouldBe` False
+    it "checks 123789" $ do
+      Day4.criterion 123789 `shouldBe` False
+
+  describe "Day4b" $ do
+    it "checks 112233" $ do
+      Day4.criterionb 112233 `shouldBe` True
+    it "checks 123444" $ do
+      Day4.criterionb 123444 `shouldBe` False
+    it "checks 111122" $ do
+      Day4.criterionb 111122 `shouldBe` True
