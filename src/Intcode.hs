@@ -26,7 +26,7 @@ run prog inputs = run0 0 prog inputs []
 
 run0 pc prog inputs outputs =
   let op = get prog pc `mod` 100
-   in case op of
+  in case op of
         99 -> (prog, outputs)
         1 -> run0 (pc + 4) (apply (+)) inputs outputs
         2 -> run0 (pc + 4) (apply (*)) inputs outputs

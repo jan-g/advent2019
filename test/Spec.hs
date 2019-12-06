@@ -3,6 +3,7 @@ import Control.Exception (evaluate)
 
 import Data.Array
 import Data.Function ((&))
+import qualified Data.Map.Strict as Map
 
 import qualified Day2
 import qualified Day3
@@ -80,9 +81,47 @@ main =
         run prog [8] `shouldBe` [1000]
         run prog [9] `shouldBe` [1001]
 
-    describe "Day6" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"
-    describe "Day6b" $ do it "works" $ do Day6.day6b [] `shouldBe` "hello world"
+    describe "Day6" $ do
+      it "calculates the examples" $ do
+        let input = ["COM)B"
+                    ,"B)C"
+                    ,"C)D"
+                    ,"D)E"
+                    ,"E)F"
+                    ,"B)G"
+                    ,"G)H"
+                    ,"D)I"
+                    ,"E)J"
+                    ,"J)K"
+                    ,"K)L"
+                    ]
+            ot = Day6.parse input
+        Day6.orbitSize ot "D" `shouldBe` 3
+        Day6.orbitSize ot "L" `shouldBe` 7
+        Day6.orbitSize ot "COM" `shouldBe` 0
+    
+    describe "Day6b" $ do
+      it "works" $ do
+        let input = ["COM)B"
+                    ,"B)C"
+                    ,"C)D"
+                    ,"D)E"
+                    ,"E)F"
+                    ,"B)G"
+                    ,"G)H"
+                    ,"D)I"
+                    ,"E)J"
+                    ,"J)K"
+                    ,"K)L"
+                    ,"K)YOU"
+                    ,"I)SAN"
+                    ]        
+            ot = Day6.parse input
+        Day6.orbitalDistance ot "E" "I" `shouldBe` 2
+        Day6.orbitalDistance ot "L" "E" `shouldBe` 3
+        Day6.orbitalDistance ot "COM" "COM" `shouldBe` 0
 
+{-
     describe "Day7" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"
     describe "Day7b" $ do it "works" $ do Day6.day6b [] `shouldBe` "hello world"
     describe "Day8" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"
@@ -119,3 +158,4 @@ main =
     describe "Day23b" $ do it "works" $ do Day6.day6b [] `shouldBe` "hello world"
     describe "Day24" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"
     describe "Day24b" $ do it "works" $ do Day6.day6b [] `shouldBe` "hello world"
+-}
