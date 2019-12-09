@@ -13,6 +13,8 @@ import qualified Day5
 import qualified Day6
 import qualified Day7
 import qualified Day8
+import qualified Day9
+import qualified Day10
 
 
 main :: IO ()
@@ -145,19 +147,37 @@ main =
                     \-5,54,1105,1,12,1,53,54,53,1008,54,0,55,1001,55,1,55,2,53,55,53,4,\
                     \53,1001,56,-1,56,1005,56,6,99,0,0,0,0,10"] `shouldBe` 18216
 
-    describe "Day8" $ do
-      it "" $ do
-        Day8.day8 [] `shouldBe` "hello world"
+    {-
+    describe "Day8" $ do it "" $ do Day8.day8 [] `shouldBe` "hello world"
+    describe "Day8b" $ do it "" $ do Day8.day8b [] `shouldBe` "hello world"
+    -}
+    
+    describe "Day9" $ do
+      it "runs a quine" $ do
+        let input = [109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99]
+            prog = Intcode.toProg input
+        (Intcode.run prog [] & snd) `shouldBe` input
+      it "outputs a 16-digit number" $ do
+        let input = [1102,34915192,34915192,7,4,7,99,0]
+            prog = Intcode.toProg input
+        (Intcode.run prog [] & snd & head & show & length) `shouldBe` 16
+      it "runs the third example" $ do
+        let input = [104,1125899906842624,99]
+            prog = Intcode.toProg input
+        (Intcode.run prog [] & snd) `shouldBe` [input !! 1]
+
+
+    describe "Day9b" $ do it "works" $ do Day9.day9b [] `shouldBe` "hello world"
+
+    describe "Day10" $ do
+      it "works" $ do
+        Day10.day10 [] `shouldBe` "hello world"
         
-    describe "Day8b" $ do
-      it "" $ do
-        Day8.day8b [] `shouldBe` "hello world"
+    describe "Day10b" $ do
+      it "works" $ do
+        Day10.day10b [] `shouldBe` "hello world"
 
 {-
-    describe "Day9" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"
-    describe "Day9b" $ do it "works" $ do Day6.day6b [] `shouldBe` "hello world"
-    describe "Day10" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"
-    describe "Day10b" $ do it "works" $ do Day6.day6b [] `shouldBe` "hello world"
     describe "Day11" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"
     describe "Day11b" $ do it "works" $ do Day6.day6b [] `shouldBe` "hello world"
     describe "Day12" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"

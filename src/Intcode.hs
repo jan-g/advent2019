@@ -4,10 +4,11 @@ module Intcode where
 import Data.Function ((&))
 import Data.List.Split
 import Data.Array
+import qualified Data.Map.Lazy as Map
 import Lib
 
 
-type Prog = Array Integer Integer
+data Prog = Prog (Map.Map Integer Integer) Integer
 
 parse ns = ns
          & splitOn ","
@@ -15,11 +16,13 @@ parse ns = ns
          & toProg
 
 toProg :: [Integer] -> Prog
-toProg ns = listArray (0, length ns - 1 & toInteger) ns
+toProg ns = Prog (Map.fromAscList $ [0..] `zip` ns) 0
 
 
-set prog addr value = prog // [(addr, value)]
-get prog addr = prog ! addr
+set (Prog a o) addr value = Prog (Map.insert addr value a) o
+get (Prog a o) addr = a Map.! addr
+addRelative (Prog a o) offset = Prog a (o + offset)
+getRelative (Prog a o) = o
 
 
 run prog inputs = run0 0 prog inputs []
@@ -30,12 +33,13 @@ run0 pc prog inputs outputs =
         99 -> (prog, outputs)
         1 -> run0 (pc + 4) (apply (+)) inputs outputs
         2 -> run0 (pc + 4) (apply (*)) inputs outputs
-        3 -> run0 (pc + 2) (set prog (get prog (pc + 1)) (head inputs)) (tail inputs) outputs
+        3 -> run0 (pc + 2) (set prog (addr 1) (head inputs)) (tail inputs) outputs
         4 -> run0 (pc + 2) prog inputs (outputs ++ [arg 1])
         5 -> run0 (if arg 1 /= 0 then arg 2 else pc + 3) prog inputs outputs
         6 -> run0 (if arg 1 == 0 then arg 2 else pc + 3) prog inputs outputs
         7 -> run0 (pc + 4) (apply (\a b -> if a < b then 1 else 0)) inputs outputs
         8 -> run0 (pc + 4) (apply (\a b -> if a == b then 1 else 0)) inputs outputs
+        9 -> run0 (pc + 2) (addRelative prog (arg 1)) inputs outputs
         _ -> error ("not possible " ++ (show pc) ++ " " ++ (show op))
   where
     arg n =
@@ -45,10 +49,18 @@ run0 pc prog inputs outputs =
       in  case mode of
           0 -> get prog val
           1 -> val
+          2 -> get prog (val + getRelative prog)  
+    addr n =
+      let inst = get prog pc
+          val = get prog (pc + n)
+          mode = inst `div` (10 ^ (n + 1)) `mod` 10
+      in  case mode of
+          0 -> val
+          2 -> val + getRelative prog
     apply op =
       let a1 = arg 1
           a2 = arg 2
-          to = get prog (pc + 3)
+          to = addr 3
        in set prog to (op a1 a2)
 
 
@@ -60,6 +72,7 @@ data I = Add A A A
        | JFalse A A 
        | Lt A A A 
        | Eq A A A
+       | AddOffs A
        | Halt
        | Value Integer
   deriving (Eq)
@@ -73,19 +86,22 @@ instance Show I where
   show (JFalse a b) = "If Not " ++ (show a) ++ " goto " ++ (show b)
   show (Lt a b c)   = (show c) ++ " = " ++ (show a) ++ " < " ++ (show b)
   show (Eq a b c)   = (show c) ++ " = " ++ (show a) ++ " == " ++ (show b)
+  show (AddOffs a)  = "@ += " ++ (show a)
   show (Halt)       = "Halt"
   show (Value v)    = "Value " ++ (show v)
 
 data A = Ind Integer
        | Abs Integer
+       | Rel Integer
   deriving (Eq)
 
 instance Show A where
   show (Ind x) = "r" ++ (show x)
   show (Abs x) = (show x)
+  show (Rel x) = "r(@ + " ++ (show x) ++ ")"
 
-dump prog =
-  decode (Data.Array.assocs prog) []
+dump (Prog prog offs) =
+  decode (Map.toAscList prog) []
   where
     decode [] out = out
     decode ((addr, v):(_, a):(_, b):(_, c):ps) d
@@ -99,6 +115,7 @@ dump prog =
             toAddr x v
                | v `mod` 10 == 0 = Ind x
                | v `mod` 10 == 1 = Abs x
+               | v `mod` 10 == 2 = Rel x
     decode ((addr, v):(_, a):(_, b):ps) d
       | v `mod` 100 == 5 = decode ps (d ++ [(addr, JTrue a' b')])
       | v `mod` 100 == 6 = decode ps (d ++ [(addr, JFalse a' b')])
@@ -107,13 +124,16 @@ dump prog =
             toAddr x v
                | v `mod` 10 == 0 = Ind x
                | v `mod` 10 == 1 = Abs x
+               | v `mod` 10 == 2 = Rel x
     decode ((addr, v):(_, a):ps) d
       | v `mod` 100 == 3 = decode ps (d ++ [(addr, Input a')])
       | v `mod` 100 == 4 = decode ps (d ++ [(addr, Output a')])
+      | v `mod` 100 == 9 = decode ps (d ++ [(addr, AddOffs a')])
       where a' = toAddr a (v `div` 100)
             toAddr x v
                | v `mod` 10 == 0 = Ind x
                | v `mod` 10 == 1 = Abs x
+               | v `mod` 10 == 2 = Rel x
     decode ((addr, v):ps) d
       | v `mod` 100 == 99 = decode ps (d ++ [(addr, Halt)])
       | otherwise         = decode ps (d ++ [(addr, Value v)])
