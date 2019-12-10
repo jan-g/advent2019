@@ -20,7 +20,7 @@ toProg ns = Prog (Map.fromAscList $ [0..] `zip` ns) 0
 
 
 set (Prog a o) addr value = Prog (Map.insert addr value a) o
-get (Prog a o) addr = a Map.! addr
+get (Prog a o) addr = Map.findWithDefault 0 addr a
 addRelative (Prog a o) offset = Prog a (o + offset)
 getRelative (Prog a o) = o
 

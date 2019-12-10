@@ -167,15 +167,75 @@ main =
         (Intcode.run prog [] & snd) `shouldBe` [input !! 1]
 
 
-    describe "Day9b" $ do it "works" $ do Day9.day9b [] `shouldBe` "hello world"
-
     describe "Day10" $ do
       it "works" $ do
-        Day10.day10 [] `shouldBe` "hello world"
-        
+        let input = [".#..#"
+                    ,"....."
+                    ,"#####"
+                    ,"....#"
+                    ,"...##"
+                    ]
+            stars = Day10.parse input
+        Day10.day10 input `shouldBe` 8
+
+      it "works on example 2" $ do
+        let input = ["......#.#."
+                    ,"#..#.#...."
+                    ,"..#######."
+                    ,".#.#.###.."
+                    ,".#..#....."
+                    ,"..#....#.#"
+                    ,"#..#....#."
+                    ,".##.#..###"
+                    ,"##...#..#."
+                    ,".#....####"
+                    ]
+        Day10.day10 input `shouldBe` 33
+
+
     describe "Day10b" $ do
+      it "sorts alignment sets" $ do
+        let coords = [(x, y) | x <- [0..2], y <- [0..2]] :: [Day10.Coord]
+        Day10.sortedAlignmentSets (1, 1) coords `shouldBe` [[(0, -1)], [(1, -1)], [(1,0)],[(1,1)],[(0,1)],[(-1,1)],[(-1,0)],[(-1,-1)]]
+        
       it "works" $ do
-        Day10.day10b [] `shouldBe` "hello world"
+        let input = [".#..##.###...#######"
+                    ,"##.############..##."
+                    ,".#.######.########.#"
+                    ,".###.#######.####.#."
+                    ,"#####.##.#.##.###.##"
+                    ,"..#####..#.#########"
+                    ,"####################"
+                    ,"#.####....###.#.#.##"
+                    ,"##.#################"
+                    ,"#####.##.###..####.."
+                    ,"..######..##.#######"
+                    ,"####.##.####...##..#"
+                    ,".#####..#.######.###"
+                    ,"##...#.####X#####..."
+                    ,"#.##########.#######"
+                    ,".####.#.###.###.#.##"
+                    ,"....##.##.###..#####"
+                    ,".#.#.###########.###"
+                    ,"#.#.#.#####.####.###"
+                    ,"###.##.####.##.#..##"
+                    ]
+            stars = Day10.parse input
+            (sc, (x, y)) = Day10.scoreAndBestSpot stars
+            as = Day10.sortedAlignmentSets (x, y) stars
+        (x, y, sc) `shouldBe` (11, 13, 211) 
+
+        Day10.cyclicTake 1 as `shouldBe` [(11 - x, 12 - y)]
+        (as & Day10.cyclicDrop 1 & Day10.cyclicTake 1) `shouldBe` [(12 - x, 1 - y)]
+        (as & Day10.cyclicDrop 2 & Day10.cyclicTake 1) `shouldBe` [(12 - x, 2 - y)]
+        (as & Day10.cyclicDrop 9 & Day10.cyclicTake 1) `shouldBe` [(12 - x, 8 - y)]
+        (as & Day10.cyclicDrop 19 & Day10.cyclicTake 1) `shouldBe` [(16 - x, 0 - y)]
+        (as & Day10.cyclicDrop 49 & Day10.cyclicTake 1) `shouldBe` [(16 - x, 9 - y)]
+        (as & Day10.cyclicDrop 99 & Day10.cyclicTake 1) `shouldBe` [(10 - x, 16 - y)]
+        (as & Day10.cyclicDrop 198 & Day10.cyclicTake 1) `shouldBe` [(9 - x, 6 - y)]
+        (as & Day10.cyclicDrop 199 & Day10.cyclicTake 1) `shouldBe` [(8 - x, 2 - y)]
+        (as & Day10.cyclicDrop 200 & Day10.cyclicTake 1) `shouldBe` [(10 - x, 9 - y)]
+        (as & Day10.cyclicDrop 298) `shouldBe` [[(11 - x, 1 - y)]]
 
 {-
     describe "Day11" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"
