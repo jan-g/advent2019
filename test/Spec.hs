@@ -15,6 +15,7 @@ import qualified Day7
 import qualified Day8
 import qualified Day9
 import qualified Day10
+import qualified Day11
 
 
 main :: IO ()
@@ -237,9 +238,28 @@ main =
         (as & Day10.cyclicDrop 200 & Day10.cyclicTake 1) `shouldBe` [(10 - x, 9 - y)]
         (as & Day10.cyclicDrop 298) `shouldBe` [[(11 - x, 1 - y)]]
 
+    describe "Day11" $ do
+      it "works" $ do
+        let progOutputs = [1,0, 0,0, 1,0, 1,0, 0,1, 1,0, 1,0]
+            expectedInputs = [0, 0, 0, 0, 1, 0, 0, 0]
+            robot = Day11.zeroedRobot
+            (inputs, robot') = Day11.runRobot robot progOutputs
+        inputs `shouldBe` expectedInputs
+        (robot' & Day11.hull & Day11.countPaint) `shouldBe` 6
+
+    describe "Day11b" $ do
+      it "works" $ do
+        let progOutputs = [1,0, 0,0, 1,0, 1,0, 0,1, 1,0, 1,0]
+            expectedInputs = [0, 0, 0, 0, 1, 0, 0, 0]
+            robot = Day11.zeroedRobot
+            (inputs, robot') = Day11.runRobot robot progOutputs
+            result = Day11.paint $ Day11.hull robot'
+        result `shouldBe` ["..#"
+                          ,"..#"
+                          ,"##."
+                          ]
+
 {-
-    describe "Day11" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"
-    describe "Day11b" $ do it "works" $ do Day6.day6b [] `shouldBe` "hello world"
     describe "Day12" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"
     describe "Day12b" $ do it "works" $ do Day6.day6b [] `shouldBe` "hello world"
     describe "Day13" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"
