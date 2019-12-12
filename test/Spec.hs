@@ -16,6 +16,7 @@ import qualified Day8
 import qualified Day9
 import qualified Day10
 import qualified Day11
+import qualified Day12
 
 
 main :: IO ()
@@ -259,9 +260,54 @@ main =
                           ,"##."
                           ]
 
+    describe "Day12" $ do
+      let input = ["<x=-1, y=0, z=2>"
+                  ,"<x=2, y=-10, z=-7>"
+                  ,"<x=4, y=-8, z=8>"
+                  ,"<x=3, y=5, z=-1>"]
+          moons = Day12.parse input
+          moons' = iterate Day12.update moons
+      it "works" $ do
+
+        moons `shouldBe` [Day12.moon0 (-1) 0 2
+                            ,Day12.moon0 2 (-10) (-7)
+                            ,Day12.moon0 4 (-8) 8
+                            ,Day12.moon0 3 5 (-1)
+                            ]         
+        (head . drop 1) moons' `shouldBe` [Day12.moon (2, -1, 1) (3, -1, -1)
+                                          ,Day12.moon (3, -7, -4) (1, 3, 3)
+                                          ,Day12.moon (1, -7, 5) (-3, 1, -3)
+                                          ,Day12.moon (2, 2, 0) (-1, -3, 1)
+                                          ]         
+      it "computes energy" $ do
+        (moons' & drop 10 & head & map Day12.totalEnergy & sum) `shouldBe` 179
+
+    describe "Day12b" $ do
+      let xs = [(-1, 0), (2, 0), (4, 0), (3, 0)]
+          ys = [(0, 0), (-10, 0), (-8, 0), (5, 0)]
+          zs = [(2, 0), (-7, 0), (8, 0), (-1, 0)]
+          xs' = iterate Day12.updateCoord xs
+          ys' = iterate Day12.updateCoord ys
+          zs' = iterate Day12.updateCoord zs
+      it "works" $ do
+        (xs' & drop 1 & head) `shouldBe` [(2, 3), (3, 1), (1, -3), (2, -1)]
+        (ys' & drop 1 & head) `shouldBe` [(-1, -1), (-7, 3), (-7, 1), (2, -3)]
+
+        let x0 = xs' & drop 10 & head
+            y0 = ys' & drop 10 & head
+            z0 = zs' & drop 10 & head
+        Day12.totalEnergy' x0 y0 z0 `shouldBe` 179
+        
+        (xs' & drop 2772 & head) `shouldBe` xs
+        (ys' & drop 2772 & head) `shouldBe` ys
+        (zs' & drop 2772 & head) `shouldBe` zs
+        
+        let cx = Day12.findCycle xs'
+            cy = Day12.findCycle ys'
+            cz = Day12.findCycle zs'
+        cx `lcm` cy `lcm` cz `shouldBe` 2772
+
 {-
-    describe "Day12" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"
-    describe "Day12b" $ do it "works" $ do Day6.day6b [] `shouldBe` "hello world"
     describe "Day13" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"
     describe "Day13b" $ do it "works" $ do Day6.day6b [] `shouldBe` "hello world"
     describe "Day14" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"
