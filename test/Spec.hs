@@ -17,6 +17,7 @@ import qualified Day9
 import qualified Day10
 import qualified Day11
 import qualified Day12
+import qualified Day13
 
 
 main :: IO ()
@@ -307,9 +308,15 @@ main =
             cz = Day12.findCycle zs'
         cx `lcm` cy `lcm` cz `shouldBe` 2772
 
+    describe "Day13" $ do
+      it "works" $ do
+        Day13.day13 [] `shouldBe` "hello world"
+        
+    describe "Day13b" $ do
+      it "works" $ do
+        Day13.day13b [] `shouldBe` "hello world"
+
 {-
-    describe "Day13" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"
-    describe "Day13b" $ do it "works" $ do Day6.day6b [] `shouldBe` "hello world"
     describe "Day14" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"
     describe "Day14b" $ do it "works" $ do Day6.day6b [] `shouldBe` "hello world"
     describe "Day15" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"

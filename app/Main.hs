@@ -33,9 +33,12 @@ import Day24
 main :: IO ()
 main = do
   args <- getArgs
+  let source = args !! 1
+  ls <- loadLines source
+
   if head args == "dump"
   then
-    dump (args !! 1)
+    dump ls
   else do
     let action = case args !! 0 of
                    "day1" -> show . day1
@@ -86,13 +89,10 @@ main = do
                    "day23b" -> show . day23b
                    "day24" -> show . day24
                    "day24b" -> show . day24b
-        source = args !! 1
-    ls <- loadLines source
     putStrLn (action ls)
 
-dump :: String -> IO ()
-dump fn = do
-  ls <- loadLines fn
+dump :: [String] -> IO ()
+dump ls = do
   let prog = (Intcode.parse . head) ls
       dis = Intcode.dump prog
   forM_ dis $ \(addr, instr) -> do
