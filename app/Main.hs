@@ -38,7 +38,7 @@ main = do
 
   if head args == "dump"
   then
-    dump ls
+    dump ls (read $ args !! 2)
   else do
     let action = case args !! 0 of
                    "day1" -> show . day1
@@ -91,10 +91,10 @@ main = do
                    "day24b" -> show . day24b
     putStrLn (action ls)
 
-dump :: [String] -> IO ()
-dump ls = do
+dump :: [String] -> Int -> IO ()
+dump ls offs = do
   let prog = (Intcode.parse . head) ls
-      dis = Intcode.dump prog
+      dis = Intcode.dump prog offs
   forM_ dis $ \(addr, instr) -> do
     putStrLn ((show addr) ++ "\t" ++ (show instr))
   

@@ -18,6 +18,7 @@ import qualified Day10
 import qualified Day11
 import qualified Day12
 import qualified Day13
+import qualified Day14
 
 
 main :: IO ()
@@ -308,6 +309,7 @@ main =
             cz = Day12.findCycle zs'
         cx `lcm` cy `lcm` cz `shouldBe` 2772
 
+{-
     describe "Day13" $ do
       it "works" $ do
         Day13.day13 [] `shouldBe` "hello world"
@@ -315,10 +317,19 @@ main =
     describe "Day13b" $ do
       it "works" $ do
         Day13.day13b [] `shouldBe` "hello world"
+-}
+
+    describe "Day14b" $ do
+      it "works" $ do
+        let input = ["1 ORE => 2 A"
+                    ,"1 A => 1 FUEL"]
+            recipe = Day14.parse input
+            reqMap = Day14.goesInto recipe
+            want = Map.singleton "FUEL" 1
+        Day14.keepMaking 0 1 reqMap recipe want Map.empty `shouldBe` (2, 0)
+
 
 {-
-    describe "Day14" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"
-    describe "Day14b" $ do it "works" $ do Day6.day6b [] `shouldBe` "hello world"
     describe "Day15" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"
     describe "Day15b" $ do it "works" $ do Day6.day6b [] `shouldBe` "hello world"
     describe "Day16" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"

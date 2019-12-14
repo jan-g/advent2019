@@ -100,8 +100,8 @@ instance Show A where
   show (Abs x) = (show x)
   show (Rel x) = "r(@ + " ++ (show x) ++ ")"
 
-dump (Prog prog offs) =
-  decode (Map.toAscList prog) []
+dump (Prog prog offs) o =
+  decode (Map.toAscList prog & drop o) []
   where
     decode [] out = out
     decode ((addr, v):(_, a):(_, b):(_, c):ps) d
