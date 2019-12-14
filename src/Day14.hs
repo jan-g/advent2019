@@ -217,14 +217,14 @@ process reqMap recipe want excess =
                     toHand = case Map.lookup making excess of
                                Nothing -> 0
                                Just x -> x
-                    
+
                     {- Compute how much more of the stuff we need -}
                     required' = 0 `max` (required - toHand)
-                    
+
                     {- Compute how much excess of the item we'll have left afterwards -}
                     onHand' = 0 `max` (toHand - required)
                     excess' = Map.insert making onHand' excess
-                    
+
                     {- If we need n units of the item, and the recipe makes m units,
                        then we'll want ceil (n / m) * the number of the constituents -}
                     times = (required' + amount - 1 - toHand) `div` amount
@@ -248,12 +248,35 @@ Given 1 trillion ORE, what is the maximum amount of FUEL you can produce?
 {-
   We have excess stuff left over each time we make things.
 -}
-day14b ls =
+day14b' ls =
   let r = parse ls
       want = Map.singleton "FUEL" 1
       ultimatelyRequires = goesInto r
       oreAvailable = 1000 * 1000 * 1000 * 1000 {- 1 000 000 000 000 -}
   in keepMaking 0 oreAvailable ultimatelyRequires r want Map.empty
+
+
+{- Try different target amounts of fuel to make -}
+day14b ls =
+  let recipe = parse ls
+      reqMap = goesInto recipe
+      oreAvailable = 1000 * 1000 * 1000 * 1000 {- 1 000 000 000 000 -}
+  in  search reqMap recipe (1000 ^ 4) 0 (1000 ^ 4)
+
+
+search reqMap recipe maxOre low high =
+  if low == high - 1 then low
+  else
+    {- Can we make the half-way point of units? -}
+    let half = (low + high) `div` 2
+        want = Map.singleton "FUEL" half
+        (oreReq, _) = process reqMap recipe want Map.empty
+        ore = oreReq Map.! "ORE"
+    in  if ore <= maxOre
+        then search reqMap recipe maxOre half high
+        else search reqMap recipe maxOre low half
+
+      
 
 
 keepMaking soFar oreAvailable reqMap recipe want have =
