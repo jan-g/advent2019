@@ -326,7 +326,7 @@ main =
             recipe = Day14.parse input
             reqMap = Day14.goesInto recipe
             want = Map.singleton "FUEL" 1
-        Day14.keepMaking 0 1 reqMap recipe want Map.empty `shouldBe` (2, 0)
+        Day14.search reqMap recipe 1000000 0 3000000 `shouldBe` 2000000
 
 
 {-

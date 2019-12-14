@@ -245,22 +245,10 @@ With that much ore, given the examples above:
 Given 1 trillion ORE, what is the maximum amount of FUEL you can produce?
 -}
 
-{-
-  We have excess stuff left over each time we make things.
--}
-day14b' ls =
-  let r = parse ls
-      want = Map.singleton "FUEL" 1
-      ultimatelyRequires = goesInto r
-      oreAvailable = 1000 * 1000 * 1000 * 1000 {- 1 000 000 000 000 -}
-  in keepMaking 0 oreAvailable ultimatelyRequires r want Map.empty
-
-
 {- Try different target amounts of fuel to make -}
 day14b ls =
   let recipe = parse ls
       reqMap = goesInto recipe
-      oreAvailable = 1000 * 1000 * 1000 * 1000 {- 1 000 000 000 000 -}
   in  search reqMap recipe (1000 ^ 4) 0 (1000 ^ 4)
 
 
@@ -276,15 +264,3 @@ search reqMap recipe maxOre low high =
         then search reqMap recipe maxOre half high
         else search reqMap recipe maxOre low half
 
-      
-
-
-keepMaking soFar oreAvailable reqMap recipe want have =
-  let (oreRequiements, have') = process reqMap recipe want have
-      have'' = Map.filterWithKey (\k v -> k /= "FUEL") have'
-      oreRequired = case Map.lookup "ORE" oreRequiements of
-                          Nothing -> 0
-                          Just n -> n
-  in  if oreRequired > oreAvailable then (soFar, oreAvailable, have'')
-      else
-        keepMaking (succ soFar) (oreAvailable - oreRequired) reqMap recipe want have''
