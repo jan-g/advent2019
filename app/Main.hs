@@ -70,7 +70,9 @@ main = do
                    "day14" -> show . day14
                    "day14b" -> show . day14b
                    "day15" -> show . day15
-                   "day15b" -> show . day15b
+                   "day15b" -> \ls ->                  
+                     let (_, t, s) = day15b $ ls
+                     in  s ++ "\n" ++ (show t)
                    "day16" -> show . day16
                    "day16b" -> show . day16b
                    "day17" -> show . day17

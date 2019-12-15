@@ -19,6 +19,7 @@ import qualified Day11
 import qualified Day12
 import qualified Day13
 import qualified Day14
+import qualified Day15
 
 
 main :: IO ()
@@ -328,9 +329,46 @@ main =
             want = Map.singleton "FUEL" 1
         Day14.search reqMap recipe 1000000 0 3000000 `shouldBe` 2000000
 
+    describe "Day15" $ do
+      it "searched" $ do
+        let ship0 = Map.singleton (0, 0) Day15.empty
+        Day15.pathTo ship0 (0, 0) Day15.unknown `shouldBe` [[(0,0),(-1,0)],[(0,0),(0,-1)],[(0,0),(0,1)],[(0,0),(1,0)]]
+
+        let ship0 = Map.fromList [((0, 0), Day15.empty), ((1, 0), Day15.wall)]
+        Day15.pathTo ship0 (0, 0) Day15.unknown `shouldBe` [[(0,0),(-1,0)],[(0,0),(0,-1)],[(0,0),(0,1)]]
+
+        let ship1 = Map.fromList [((0, 0), Day15.empty)
+                                 ,((1, 0), Day15.wall)
+                                 ,((-1, 0), Day15.wall)
+                                 ,((0, 1), Day15.wall)
+                                 ]
+        Day15.pathTo ship1 (0, 0) Day15.unknown `shouldBe` [[(0,0),(0,-1)]]
+
+        let ship2 = Map.fromList [((0, 0), Day15.empty)
+                                 ,((1, 0), Day15.wall)
+                                 ,((-1, 0), Day15.wall)
+                                 ,((0, 1), Day15.wall)
+                                 ,((0, -1), Day15.empty)
+                                 ,((0, -2), Day15.wall)
+                                 ]
+        Day15.pathTo ship2 (0, 0) Day15.unknown `shouldBe` [[(0,0),(0,-1),(-1,-1)],[(0,0),(0,-1),(1,-1)]]
+
+        let ship3 = Map.fromList [((0, 0), Day15.empty)
+                                 ,((-1, 0), Day15.wall)
+                                 ,((0, 1), Day15.wall)
+                                 ,((0, -1), Day15.empty)
+                                 ,((0, -2), Day15.wall)
+                                 ]
+        Day15.pathTo ship3 (0, 0) Day15.unknown `shouldBe` [[(0,0),(1,0)]]
+
+        let ship4 = Map.fromList $ [((x, -1), Day15.wall) | x <- [-100..100]] ++
+                                   [((x, 1), Day15.wall) | x <- [-100..100]] ++
+                                   [((x, 0), Day15.empty) | x <- [-100..100]] ++
+                                   [((-101, 0), Day15.wall)]
+        Day15.pathTo ship4 (-30, 0) Day15.unknown `shouldBe` [[(x, 0) | x <- [-30..101]]]
+
 
 {-
-    describe "Day15" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"
     describe "Day15b" $ do it "works" $ do Day6.day6b [] `shouldBe` "hello world"
     describe "Day16" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"
     describe "Day16b" $ do it "works" $ do Day6.day6b [] `shouldBe` "hello world"
