@@ -39,6 +39,13 @@ main = do
   if head args == "dump"
   then
     dump ls (read $ args !! 2)
+{-
+  else if head args == "day16b"
+  then do
+    result <- day16b' ls
+    putStrLn result
+    return ()
+-}
   else do
     let action = case args !! 0 of
                    "day1" -> show . day1

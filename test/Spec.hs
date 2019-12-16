@@ -4,6 +4,7 @@ import Control.Exception (evaluate)
 import Data.Array
 import Data.Function ((&))
 import qualified Data.Map.Strict as Map
+import Control.Monad
 
 import qualified Day2
 import qualified Day3
@@ -20,6 +21,7 @@ import qualified Day12
 import qualified Day13
 import qualified Day14
 import qualified Day15
+import qualified Day16
 
 
 main :: IO ()
@@ -314,7 +316,7 @@ main =
     describe "Day13" $ do
       it "works" $ do
         Day13.day13 [] `shouldBe` "hello world"
-        
+
     describe "Day13b" $ do
       it "works" $ do
         Day13.day13b [] `shouldBe` "hello world"
@@ -368,10 +370,26 @@ main =
         Day15.pathTo ship4 (-30, 0) Day15.unknown `shouldBe` [[(x, 0) | x <- [-30..101]]]
 
 
+    describe "Day16" $ do
+      let signal = Day16.parse "12345678"
+
+      it "works" $ do
+        (Day16.nextList signal & Day16.unparse) `shouldBe` "48226158"
+
+      it "works 2" $ do
+        Day16.day16 ["80871224585914546619083218645595"] `shouldBe` "24176176"
+
+    describe "Day16b" $ do
+      it "works" $ do
+        Day16.day16b ["03036732577212944063491565474664"] `shouldBe` "84462026"
+
+    describe "Day16b'" $ do
+      it "works 2" $ do
+        ans <- Day16.day16b' ["03036732577212944063491565474664"]
+        ans `shouldBe` "84462026"
+
+
 {-
-    describe "Day15b" $ do it "works" $ do Day6.day6b [] `shouldBe` "hello world"
-    describe "Day16" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"
-    describe "Day16b" $ do it "works" $ do Day6.day6b [] `shouldBe` "hello world"
     describe "Day17" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"
     describe "Day17b" $ do it "works" $ do Day6.day6b [] `shouldBe` "hello world"
     describe "Day18" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"

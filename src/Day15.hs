@@ -284,7 +284,9 @@ printShip ship =
       let xs = ship & Map.keysSet & Set.map fst
           ys = ship & Map.keysSet & Set.map snd
       in  ((Set.findMin xs, Set.findMin ys), (Set.findMax xs, Set.findMax ys))
-    shipLine y (x0,x1) = [if (x,y) == (0,0) then 'D' else shipChar $ shipGet ship (x,y) | x <- [x0..x1]] 
+    shipLine y (x0,x1) = [shipAt (x,y) | x <- [x0..x1]]
+    shipAt (0,0) = 'D'
+    shipAt (x,y) = shipGet ship (x,y) & shipChar 
     shipChar Unknown = '?'
     shipChar Wall = '#'
     shipChar Empty = '.'
