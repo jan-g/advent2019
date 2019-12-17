@@ -267,6 +267,9 @@ day17b ls =
 at scaf (Robot xy _) = getScaf scaf xy & isScaffold
 seen visited (Robot xy _) = Set.member xy visited
 
+
+{- When looking for a route, prefer to keep going forward across a crossroads whenever posssible.
+   The pattern generated lets us do this. -}
 findRoute :: Scaffold -> Robot -> Set.Set Coord -> String
 findRoute scaf robot visited =
   {- If there's nowhere left to go, stop -}
@@ -279,6 +282,8 @@ findRoute scaf robot visited =
       else if canR && (not $ seen visited r) then "R1" ++ (findRoute scaf r (Set.insert (xy r) visited))
       else "?"
 
+
+{- Greedily turn a route into a shortened one that uses the provided labelled subsequences -}
 replaceRoute r a b c = replaceRoute0 r (uncompress a) (uncompress b) (uncompress c)
 
 replaceRoute0 "" _ _ _ = ""
@@ -316,6 +321,7 @@ shorten route =
   in (a, b, c, r)
 
 
+{- Turn 111111 into 5 -}
 compress :: String -> String
 compress "" = ""
 compress r@('1':rs) =
@@ -323,6 +329,7 @@ compress r@('1':rs) =
   in  (show fs) ++ compress (drop fs r)
 compress (c:rs) = c:(compress rs)
 
+{- Turn 10 into 1111111111 -}
 uncompress "" = ""
 uncompress r@(d:rs)
   | isDigit d = let n = takeWhile isDigit r
@@ -330,6 +337,7 @@ uncompress r@(d:rs)
                     in  (replicate fs '1') ++ (uncompress $ drop (length n) r)
 uncompress (x:rs) = x : (uncompress rs)
 
+{- Turn R3L into R,3,L -}
 rewrite "" = ""
 rewrite x = rewrite0 x & tail
 rewrite0 "" = ""
@@ -338,6 +346,7 @@ rewrite0 r@(d:rs)
                 in  "," ++ n ++ rewrite0 (drop (length n) r)
 rewrite0 (x:rs) = "," ++ x : (rewrite0 rs)
 
+{- Turn R,3,L into R3L -}
 unrewrite p = p & splitOn "," & map (\c -> case c of
                                         "R" -> "R"
                                         "L" -> "L"
