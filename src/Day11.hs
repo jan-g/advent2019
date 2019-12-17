@@ -7,6 +7,7 @@ import qualified Data.Set as Set
 import qualified Data.Map.Lazy as Map
 import Data.Char
 
+import Lib
 import qualified Intcode
 
 {-
@@ -202,17 +203,4 @@ day11b ls =
 
 paint :: Hull -> [String]
 paint hull =
-  let ((minx, miny), (maxx, maxy)) = hullLimits hull
-  in  reverse [paintLine hull minx maxx y | y <- [miny..maxy]]
-  where
-    paintLine hull minx maxx y = [paintCell hull x y | x <- [minx..maxx]]
-    paintCell hull x y = case getTile hull (x, y) of
-                           0 -> '.'
-                           1 -> '#'
-
-hullLimits :: Hull -> (Coord, Coord)
-hullLimits (hull, _) =
-  let coords = Map.keys hull
-      xs = map fst coords
-      ys = map snd coords
-  in ((minimum xs, minimum ys), (maximum xs, maximum ys))
+  drawMapWith (\_ x -> case x of Nothing -> '_'; Just Black -> ' '; Just White -> '#') (fst hull) & reverse

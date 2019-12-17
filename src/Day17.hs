@@ -8,6 +8,7 @@ import qualified Data.Map.Strict as Map
 import Data.Char
 import Data.List.Extra (inits, minimumOn)
 
+import Lib
 import Intcode
 
 {-

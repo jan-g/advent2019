@@ -7,6 +7,7 @@ import qualified Data.Set as Set
 import qualified Data.Map.Lazy as Map
 import Data.Char
 
+import Lib
 import IntcodeStep
 
 {-
@@ -216,43 +217,43 @@ Oxygen starts in the location containing the repaired oxygen system. It takes on
 
 In the example above, suppose you've used the droid to explore the area fully and have the following map (where locations that currently contain oxygen are marked O):
 
- ##   
-#..## 
-#.#..#
-#.O.# 
- ###  
+     ##   
+    #..## 
+    #.#..#
+    #.O.# 
+     ###  
 
 Initially, the only location which contains oxygen is the location of the repaired oxygen system. However, after one minute, the oxygen spreads to all open (.) locations that are adjacent to a location containing oxygen:
 
- ##   
-#..## 
-#.#..#
-#OOO# 
- ###  
+     ##   
+    #..## 
+    #.#..#
+    #OOO# 
+     ###  
 
 After a total of two minutes, the map looks like this:
 
- ##   
-#..## 
-#O#O.#
-#OOO# 
- ###  
+     ##   
+    #..## 
+    #O#O.#
+    #OOO# 
+     ###  
 
 After a total of three minutes:
 
- ##   
-#O.## 
-#O#OO#
-#OOO# 
- ###  
+     ##   
+    #O.## 
+    #O#OO#
+    #OOO# 
+     ###  
 
 And finally, the whole region is full of oxygen after a total of four minutes:
 
- ##   
-#OO## 
-#O#OO#
-#OOO# 
- ###  
+     ##   
+    #OO## 
+    #O#OO#
+    #OOO# 
+     ###  
 
 So, in this example, all locations contain oxygen after 4 minutes.
 
@@ -277,18 +278,10 @@ day15b ls =
 
 
 printShip ship =
-  let ((x0,y0),(x1,y1)) = shipBounds ship
-  in  [shipLine y (x0,x1) | y <- [y0..y1]] & reverse & unlines
+  drawMapWith shipChar ship & reverse & unlines 
   where
-    shipBounds ship =
-      let xs = ship & Map.keysSet & Set.map fst
-          ys = ship & Map.keysSet & Set.map snd
-      in  ((Set.findMin xs, Set.findMin ys), (Set.findMax xs, Set.findMax ys))
-    shipLine y (x0,x1) = [shipAt (x,y) | x <- [x0..x1]]
-    shipAt (0,0) = 'D'
-    shipAt (x,y) = shipGet ship (x,y) & shipChar 
-    shipChar Unknown = '?'
-    shipChar Wall = '#'
-    shipChar Empty = '.'
-    shipChar Oxygen = 'O'
-         
+    shipChar (0,0) _ = 'D'
+    shipChar _ (Just Wall) = '#'
+    shipChar _ (Just Empty) = '.'
+    shipChar _ (Just Oxygen) = 'O'
+    shipChar _ _ = '?'

@@ -7,6 +7,7 @@ import qualified Data.Set as Set
 import qualified Data.Map.Strict as Map
 import Data.Char
 
+import Lib
 import IntcodeStep
 
 {-
@@ -99,18 +100,11 @@ playGame prog sc input =
 
 
 screenDump sc =
-  let ((x0, y0), (x1, y1)) = screenBounds sc
-  in  unlines $ [(show $ score sc)] ++ [lineDump sc y (x0, x1) | y <- [y0..y1]]
+  drawMapWith tilePic (tiles sc) & unlines
   where
-    lineDump sc y (x0, x1) = [tilePic ((tiles sc) Map.!? (x, y)) | x <- [x0..x1]]
-    tilePic Nothing = '.'
-    tilePic (Just 0) = '.'
-    tilePic (Just 1) = 'W'
-    tilePic (Just 2) = '#'
-    tilePic (Just 3) = '-'
-    tilePic (Just 4) = 'o'
-
-screenBounds sc =
-  let xs = map fst (Map.keys (tiles sc))
-      ys = map snd (Map.keys (tiles sc))
-  in  ((minimum xs, minimum ys), (maximum xs, maximum ys))
+    tilePic _ Nothing = '.'
+    tilePic _ (Just 0) = '.'
+    tilePic _ (Just 1) = 'W'
+    tilePic _ (Just 2) = '#'
+    tilePic _ (Just 3) = '-'
+    tilePic _ (Just 4) = 'o'
