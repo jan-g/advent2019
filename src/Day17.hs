@@ -38,13 +38,13 @@ space uncontrollably, it will instead be visible as X.
 In general, the scaffold forms a path, but it sometimes loops back onto itself. For example, suppose you can see
 the following view from the cameras:
 
-..#..........
-..#..........
-#######...###
-#.#...#...#.#
-#############
-..#...#...#..
-..#####...^..
+    ..#..........
+    ..#..........
+    #######...###
+    #.#...#...#.#
+    #############
+    ..#...#...#..
+    ..#####...^..
 
 Here, the vacuum robot, ^ is facing up and sitting at one end of the scaffold near the bottom-right of the image.
 The scaffold continues up, loops across itself several times, and ends at the top-left of the image.
@@ -54,13 +54,13 @@ all scaffold intersections; for each, its alignment parameter is the distance be
 edge of the view multiplied by the distance between its top edge and the top edge of the view. Here, the
 intersections from the above image are marked O:
 
-..#..........
-..#..........
-##O####...###
-#.#...#...#.#
-##O###O###O##
-..#...#...#..
-..#####...^..
+    ..#..........
+    ..#..........
+    ##O####...###
+    #.#...#...#.#
+    ##O###O###O##
+    ..#...#...#..
+    ..#####...^..
 
 For these intersections:
 
@@ -141,25 +141,25 @@ movement functions may each contain at most 20 characters, not counting the newl
 
 For example, consider the following camera feed:
 
-#######...#####
-#.....#...#...#
-#.....#...#...#
-......#...#...#
-......#...###.#
-......#.....#.#
-^########...#.#
-......#.#...#.#
-......#########
-........#...#..
-....#########..
-....#...#......
-....#...#......
-....#...#......
-....#####......
+    #######...#####
+    #.....#...#...#
+    #.....#...#...#
+    ......#...#...#
+    ......#...###.#
+    ......#.....#.#
+    ^########...#.#
+    ......#.#...#.#
+    ......#########
+    ........#...#..
+    ....#########..
+    ....#...#......
+    ....#...#......
+    ....#...#......
+    ....#####......
 
 In order for the vacuum robot to visit every part of the scaffold at least once, one path it could take is:
 
-R,8,R,8,R,4,R,4,R,8,L,6,L,2,R,4,R,4,R,8,R,8,R,8,L,6,L,2
+    R,8,R,8,R,4,R,4,R,8,L,6,L,2,R,4,R,4,R,8,R,8,R,8,L,6,L,2
 
 Without the memory limit, you could just supply this whole string to function A and have the main routine call
 A once. However, you'll need to split it into smaller parts.
@@ -180,21 +180,21 @@ Visually, this would break the desired path into the following parts:
 A,        B,            C,        B,            A,        C
 R,8,R,8,  R,4,R,4,R,8,  L,6,L,2,  R,4,R,4,R,8,  R,8,R,8,  L,6,L,2
 
-CCCCCCA...BBBBB
-C.....A...B...B
-C.....A...B...B
-......A...B...B
-......A...CCC.B
-......A.....C.B
-^AAAAAAAA...C.B
-......A.A...C.B
-......AAAAAA#AB
-........A...C..
-....BBBB#BBBB..
-....B...A......
-....B...A......
-....B...A......
-....BBBBA......
+    CCCCCCA...BBBBB
+    C.....A...B...B
+    C.....A...B...B
+    ......A...B...B
+    ......A...CCC.B
+    ......A.....C.B
+    ^AAAAAAAA...C.B
+    ......A.A...C.B
+    ......AAAAAA#AB
+    ........A...C..
+    ....BBBB#BBBB..
+    ....B...A......
+    ....B...A......
+    ....B...A......
+    ....BBBBA......
 
 Of course, the scaffolding outside your ship is much more complex.
 

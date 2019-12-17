@@ -422,8 +422,6 @@ main =
 
       it "replaces" $ do
         Day17.replaceRoute route a "X" "X" `shouldBe` routeA
-        all (\s -> filter (== 'A') s == "") (Day17.inits_no_A routeA) `shouldBe` True
-        all (\s -> filter (\c -> c == 'A' || c == 'B') s == "") (Day17.inits_no_AB routeAB) `shouldBe` True
 
       it "shortens" $ do
         let (a, b, c, routeABC) = Day17.shorten route
