@@ -293,10 +293,17 @@ replaceRoute0 route a b c =
 
 shorten route =
   {- Find an A that has maximal effect -}
-  let abcr = [(compress a, compress b, compress c, r''') | a <- tail (inits route), let r' = replaceRoute0 route a "X" "X",
+  let abcr = [(a', b', c', r''') | a <- tail (inits route), let r' = replaceRoute0 route a "X" "X",
+                       let a' = compress a,
+                       length (rewrite a') <= 20,
                        b <- inits_no_A r', let r'' = replaceRoute0 route a b "X",
+                       let b' = compress b,
+                       length (rewrite b') <= 20,
                        c <- inits_no_AB r'', let r''' = replaceRoute0 route a b c,
-                       filter (\c -> c /= 'A' && c /= 'B' && c /= 'C') r''' == ""]
+                       let c' = compress c,
+                       length (rewrite c') <= 20,
+                       filter (\c -> c /= 'A' && c /= 'B' && c /= 'C') r''' == "",
+                       length (rewrite r''') <= 20]
       (a, b, c, r) = minimumOn (\(a, b, c, r) -> a ++ b ++ c ++ r & length) abcr
   in (a, b, c)
 
