@@ -240,20 +240,18 @@ day17b ls =
       tracedAll = trace `Set.difference` Map.keysSet scaf
       {- (a, b, c) = ("R6L12R6","L12R6L8L12","R12L10L10") -}
       {- The answer is from the following - but it took about 30s to compute -}
-      (a, b, c) = shorten route
-      route' = replaceRoute route a b c
-      (a', b', c', r') = (rewrite a, rewrite b, rewrite c, rewrite route')
+      (a, b, c, route') = shorten route
       
       {- Force the vacuum robot to wake up by changing the value in your ASCII program at address 0 from 1 to 2. -}
       prog' = set prog 0 2
       {- First, you will be prompted for the main movement routine. Supply the movement functions to use as ASCII
          text, separating them with commas (,, ASCII code 44),
          and ending the list with a newline (ASCII code 10). -}
-      input = r' ++ "\n"
+      input = route' ++ "\n"
       {- Then, you will be prompted for each movement function. -}
-              ++ a' ++ "\n"
-              ++ b' ++ "\n"
-              ++ c' ++ "\n"
+              ++ a ++ "\n"
+              ++ b ++ "\n"
+              ++ c ++ "\n"
       {- Finally, you will be asked whether you want to see a continuous video feed; provide either y or n and a
          newline. -}
               ++ "n\n"
@@ -261,7 +259,7 @@ day17b ls =
       (_, output', _) = run prog' (map (toInteger . ord) input)
       output'' = take (length output' & pred) output'  :: [Integer]
       answer = drop (length output' & pred) output' & head  :: Integer
-  in (a', b', c', r',
+  in (a, b, c, route',
       map (chr . fromInteger) output''  :: String,
       answer :: Integer)
 
@@ -294,18 +292,18 @@ replaceRoute0 route a b c =
 shorten route =
   {- Find an A that has maximal effect -}
   let abcr = [(a', b', c', r''') | a <- tail (inits route), let r' = replaceRoute0 route a "X" "X",
-                       let a' = compress a,
-                       length (rewrite a') <= 20,
+                       let a' = rewrite $ compress a,
+                       length a' <= 20,
                        b <- inits_no_A r', let r'' = replaceRoute0 route a b "X",
-                       let b' = compress b,
-                       length (rewrite b') <= 20,
-                       c <- inits_no_AB r'', let r''' = replaceRoute0 route a b c,
-                       let c' = compress c,
-                       length (rewrite c') <= 20,
-                       filter (\c -> c /= 'A' && c /= 'B' && c /= 'C') r''' == "",
-                       length (rewrite r''') <= 20]
-      (a, b, c, r) = minimumOn (\(a, b, c, r) -> a ++ b ++ c ++ r & length) abcr
-  in (a, b, c)
+                       let b' = rewrite $ compress b,
+                       length b' <= 20,
+                       c <- inits_no_AB r'', let r''' = rewrite $ replaceRoute0 route a b c,
+                       let c' = rewrite $ compress c,
+                       length c' <= 20,
+                       filter (\c -> c /= 'A' && c /= 'B' && c /= 'C' && c /= ',') r''' == "",
+                       length r''' <= 20]
+      (a, b, c, r) = minimumOn (\(a, b, c, r) -> (length $ a ++ b ++ c) + (2 * length r)) abcr
+  in (a, b, c, r)
 
 inits_no_A route =
   let rs = splitOn "A" route
@@ -338,3 +336,8 @@ rewrite0 r@(d:rs)
   | isDigit d = let n = takeWhile isDigit r
                 in  "," ++ n ++ rewrite0 (drop (length n) r)
 rewrite0 (x:rs) = "," ++ x : (rewrite0 rs)
+
+unrewrite p = p & splitOn "," & map (\c -> case c of
+                                        "R" -> "R"
+                                        "L" -> "L"
+                                        d -> replicate (read d) '1') & concat

@@ -425,9 +425,15 @@ main =
         all (\s -> filter (\c -> c == 'A' || c == 'B') s == "") (Day17.inits_no_AB routeAB) `shouldBe` True
 
       it "shortens" $ do
-        let (a, b, c) = Day17.shorten route
-            routeABC = Day17.replaceRoute route a b c
-        (a, b, c, routeABC) `shouldBe` ("R6L12R6","L12R6L8L12","R12L10L10","AABCBCBCBA")
+        let (a, b, c, routeABC) = Day17.shorten route
+        (a, b, c, routeABC) `shouldBe` ("R,6,L,12,R,6","L,12,R,6,L,8,L,12","R,12,L,10,L,10","A,A,B,C,B,C,B,C,B,A")
+
+      let route = "R,8,R,8,R,4,R,4,R,8,L,6,L,2,R,4,R,4,R,8,R,8,R,8,L,6,L,2"
+          r' = Day17.unrewrite route
+          
+      it "compresses another" $ do
+        let (a, b, c, r'') = Day17.shorten r'
+        (a, b, c, r'') `shouldBe` ("R,8,R,8","R,8,L,6,L,2","R,4,R,4","A,C,B,C,A,B")
 
 {-
     describe "Day18" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"
