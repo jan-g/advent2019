@@ -25,6 +25,7 @@ import qualified Day14
 import qualified Day15
 import qualified Day16
 import qualified Day17
+import qualified Day18
 
 
 main :: IO ()
@@ -433,11 +434,15 @@ main =
           
       it "compresses another" $ do
         let (a, b, c, r'') = Day17.shorten r'
-        (a, b, c, r'') `shouldBe` ("R,8,R,8","R,8,L,6,L,2","R,4,R,4","A,C,B,C,A,B")
+        (a, b, c, r'') `shouldBe` ("R,8,R,8","R,4,R,4","R,8,L,6,L,2","A,B,C,B,A,C")
+
+    describe "Day18" $ do
+      it "works" $ do
+        Day18.day18 [] `shouldBe` "hello world"
+
+    describe "Day18b" $ do it "works" $ do Day18.day18b [] `shouldBe` "hello world"
 
 {-
-    describe "Day18" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"
-    describe "Day18b" $ do it "works" $ do Day6.day6b [] `shouldBe` "hello world"
     describe "Day19" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"
     describe "Day19b" $ do it "works" $ do Day6.day6b [] `shouldBe` "hello world"
     describe "Day20" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"

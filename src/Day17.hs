@@ -8,7 +8,7 @@ import qualified Data.Map.Strict as Map
 import Data.Char
 import Data.List.Extra (inits, minimumOn)
 
-import IntcodeStep
+import Intcode
 
 {-
 --- Day 17: Set and Forget ---
@@ -99,7 +99,7 @@ intersections scaf = Map.filterWithKey (\(x, y) c -> [(x, y), (x-1, y), (x+1, y)
 
 day17 ls =
   let prog = parse $ head ls
-      (_, output, _) = run prog []
+      (_, output) = run prog []
       text = map (chr . fromInteger) output & lines
       (x0, y0) = (0, 0)
       x1 = text & head & length & pred
@@ -228,7 +228,7 @@ xy (Robot c _) = c
 
 day17b ls =
   let prog = parse $ head ls
-      (_, output, _) = run prog []
+      (_, output) = run prog []
       text = map (chr . fromInteger) output & lines
       (x0, y0) = (0, 0)
       x1 = text & head & length & pred
@@ -241,9 +241,9 @@ day17b ls =
       {- (a, b, c) = ("R6L12R6","L12R6L8L12","R12L10L10") -}
       {- The answer is from the following - but it took about 30s to compute -}
       (a, b, c, route') = shorten route
-      
+
       {- Force the vacuum robot to wake up by changing the value in your ASCII program at address 0 from 1 to 2. -}
-      prog' = set prog 0 2
+      prog' = poke prog 0 2
       {- First, you will be prompted for the main movement routine. Supply the movement functions to use as ASCII
          text, separating them with commas (,, ASCII code 44),
          and ending the list with a newline (ASCII code 10). -}
@@ -256,7 +256,7 @@ day17b ls =
          newline. -}
               ++ "n\n"
 
-      (_, output', _) = run prog' (map (toInteger . ord) input)
+      (_, output') = run prog' (map (toInteger . ord) input)
       output'' = take (length output' & pred) output'  :: [Integer]
       answer = drop (length output' & pred) output' & head  :: Integer
   in (a, b, c, route',
@@ -291,29 +291,30 @@ replaceRoute0 route a b c =
 
 shorten route =
   {- Find an A that has maximal effect -}
-  let abcr = [(a', b', c', r''') | a <- tail (inits route), let r' = replaceRoute0 route a "X" "X",
+  let abcr = [(a', b', c', r''') |
+                       {- Candidates for A come at the start of the sequence -}
+                       a <- tail (inits route),
                        let a' = rewrite $ compress a,
                        length a' <= 20,
-                       b <- inits_no_A r', let r'' = replaceRoute0 route a b "X",
+                       let r' = replaceRoute0 route a "X" "X",
+                       {- Candidates for B might as well immediately follow the prefix of As -}
+                       b <- dropWhile (=='A') r' & takeWhile (/='A') & inits & tail,
                        let b' = rewrite $ compress b,
                        length b' <= 20,
-                       c <- inits_no_AB r'', let r''' = rewrite $ replaceRoute0 route a b c,
+                       let r'' = replaceRoute0 route a b "X",
+                       {- And similarly for candidates for C -}
+                       c <- dropWhile (\x -> x=='A' || x=='B') r''
+                          & takeWhile (\x -> x/='A' && x/='B')
+                          & inits & tail,
                        let c' = rewrite $ compress c,
                        length c' <= 20,
+                       let r''' = rewrite $ replaceRoute0 route a b c,
+                       {- After extracting As, Bs and Cs, there must be nothing left -}
                        filter (\c -> c /= 'A' && c /= 'B' && c /= 'C' && c /= ',') r''' == "",
                        length r''' <= 20]
       (a, b, c, r) = minimumOn (\(a, b, c, r) -> (length $ a ++ b ++ c) + (2 * length r)) abcr
   in (a, b, c, r)
 
-inits_no_A route =
-  let rs = splitOn "A" route
-      rs' = map (tail . inits) rs
-  in  concat rs' & Set.fromList & Set.toList
-
-inits_no_AB route =
-  let rs = splitOn "A" route & map (splitOn "B") & concat
-      rs' = map (tail . inits) rs
-  in  concat rs' & Set.fromList & Set.toList
 
 compress :: String -> String
 compress "" = ""

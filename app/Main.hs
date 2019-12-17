@@ -5,6 +5,7 @@ import Control.Monad (forM_)
 
 import Lib
 import qualified Intcode
+import qualified IntcodeStepIO as IS
 import Day1
 import Day2
 import Day3
@@ -39,13 +40,12 @@ main = do
   if head args == "dump"
   then
     dump ls (read $ args !! 2)
-{-
-  else if head args == "day16b"
+
+  else if head args == "day17-dump"
   then do
-    result <- day16b' ls
-    putStrLn result
+    day17Dump ls
     return ()
--}
+
   else do
     let action = case args !! 0 of
                    "day1" -> show . day1
@@ -110,6 +110,14 @@ dump :: [String] -> Int -> IO ()
 dump ls offs = do
   let prog = (Intcode.parse . head) ls
       dis = Intcode.dump prog offs
-  forM_ dis $ \(addr, instr) -> do
-    putStrLn ((show addr) ++ "\t" ++ (show instr))
+  forM_ dis $ \(addr, ints, instr) -> do
+    putStrLn ((show addr) ++ "\t" ++ (show instr) ++ "\t\t" ++ (show ints))
+
+
+day17Dump :: [String] -> IO ()
+day17Dump ls = do
+  let prog = (Intcode.parse . head) ls
+      prog' = Intcode.poke prog 0 2
+  Left prog'' <- IS.runIO (IS.runUntil 51) prog' []
+  return ()
   
