@@ -7,6 +7,7 @@ import qualified Data.Set as Set
 import qualified Data.Map.Strict as Map
 import Data.Char
 import Data.List.Extra (inits, minimumOn)
+import Control.Monad
 
 import Lib
 import Intcode
@@ -297,6 +298,31 @@ replaceRoute0 route a b c =
 
 shorten route =
   {- Find an A that has maximal effect -}
+  let abcr = do
+               {- Candidates for A come at the start of the sequence -}
+               a <- tail (inits route)
+               let a' = rewrite $ compress a
+               guard $ length a' <= 20
+               let r' = replaceRoute0 route a "X" "X"
+               {- Candidates for B might as well immediately follow the prefix of As -}
+               b <- dropWhile (=='A') r' & takeWhile (/='A') & inits & tail
+               let b' = rewrite $ compress b
+               guard $ length b' <= 20
+               let r'' = replaceRoute0 route a b "X"
+               {- And similarly for candidates for C -}
+               c <- dropWhile (\x -> x=='A' || x=='B') r''
+                  & takeWhile (\x -> x/='A' && x/='B')
+                  & inits & tail
+               let c' = rewrite $ compress c
+               guard $ length c' <= 20
+               let r''' = rewrite $ replaceRoute0 route a b c
+               {- After extracting As, Bs and Cs, there must be nothing left -}
+               guard $ filter (\c -> c /= 'A' && c /= 'B' && c /= 'C' && c /= ',') r''' == ""
+               guard $ length r''' <= 20
+               return (a', b', c', r''')
+  in  minimumOn (\(a, b, c, r) -> (length $ a ++ b ++ c) + (2 * length r)) abcr
+  
+  {-
   let abcr = [(a', b', c', r''') |
                        {- Candidates for A come at the start of the sequence -}
                        a <- tail (inits route),
@@ -320,6 +346,7 @@ shorten route =
                        length r''' <= 20]
       (a, b, c, r) = minimumOn (\(a, b, c, r) -> (length $ a ++ b ++ c) + (2 * length r)) abcr
   in (a, b, c, r)
+  -}
 
 
 {- Turn 111111 into 5 -}

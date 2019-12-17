@@ -7,6 +7,8 @@ import qualified Data.Set as Set
 import qualified Data.Map.Strict as Map
 import Data.Char
 
+import Control.Monad
+
 {-
 -}
 
@@ -15,7 +17,11 @@ parse ls = ls
          & splitOn "-"
          & map read
 
-day18 ls = "hello world"
+day18 ls = do
+  l <- [1, 2, 3, 4, 5]
+  let x = l + 1
+  guard $ x `mod` 2 == 0
+  return x
 
 {-
 -}
