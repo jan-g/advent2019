@@ -7,6 +7,7 @@ import qualified Data.Set as Set
 import qualified Data.Map.Strict as Map
 import Data.Char
 import System.IO
+import qualified Data.Vector as V
 
 {-
 --- Day 16: Flawed Frequency Transmission ---

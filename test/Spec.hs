@@ -4,7 +4,9 @@ import Control.Exception (evaluate)
 import Data.Array
 import Data.Function ((&))
 import qualified Data.Map.Strict as Map
+import qualified Data.Set as Set
 import Control.Monad
+import Data.List.Split (splitOn)
 
 import qualified Day2
 import qualified Day3
@@ -22,6 +24,7 @@ import qualified Day13
 import qualified Day14
 import qualified Day15
 import qualified Day16
+import qualified Day17
 
 
 main :: IO ()
@@ -382,16 +385,51 @@ main =
     describe "Day16b" $ do
       it "works" $ do
         Day16.day16b ["03036732577212944063491565474664"] `shouldBe` "84462026"
-
+{-
     describe "Day16b'" $ do
       it "works 2" $ do
         ans <- Day16.day16b' ["03036732577212944063491565474664"]
         ans `shouldBe` "84462026"
+-}
 
+    describe "Day17" $ do
+      it "locates intersections" $ do
+        let input = ["..#.........."
+                    ,"..#.........."
+                    ,"#######...###"
+                    ,"#.#...#...#.#"
+                    ,"#############"
+                    ,"..#...#...#.."
+                    ,"..#####...^.."
+                    ]
+            scaf = Day17.textToScaf input
+            ints = Day17.intersections scaf
+        ints `shouldBe` Set.fromList [(2,2), (2,4), (6,4), (10, 4)]
+
+
+    describe "Day17b" $ do
+      let route = "R111111L111111111111R111111R111111L111111111111R111111L111111111111R111111L11111111L111111111111R111111111111L1111111111L1111111111L111111111111R111111L11111111L111111111111R111111111111L1111111111L1111111111L111111111111R111111L11111111L111111111111R111111111111L1111111111L1111111111L111111111111R111111L11111111L111111111111R111111L111111111111R111111"
+          a = "R111111L11111111"
+          routeA = "A1111R111111A1111A1111AL111111111111R111111111111L1111111111L1111111111L111111111111AL111111111111R111111111111L1111111111L1111111111L111111111111AL111111111111R111111111111L1111111111L1111111111L111111111111AL111111111111A1111R111111"
+          b = "1111R111111"
+          routeAB = Day17.replaceRoute route a b "X"
+
+      it "uncompresses" $ do
+        Day17.uncompress "LRRL" `shouldBe` "LRRL"
+        Day17.uncompress "10" `shouldBe` "1111111111"
+        Day17.uncompress "2L2" `shouldBe` "11L11"
+
+      it "replaces" $ do
+        Day17.replaceRoute route a "X" "X" `shouldBe` routeA
+        all (\s -> filter (== 'A') s == "") (Day17.inits_no_A routeA) `shouldBe` True
+        all (\s -> filter (\c -> c == 'A' || c == 'B') s == "") (Day17.inits_no_AB routeAB) `shouldBe` True
+
+      it "shortens" $ do
+        let (a, b, c) = Day17.shorten route
+            routeABC = Day17.replaceRoute route a b c
+        (a, b, c, routeABC) `shouldBe` ("R6L12R6","L12R6L8L12","R12L10L10","AABCBCBCBA")
 
 {-
-    describe "Day17" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"
-    describe "Day17b" $ do it "works" $ do Day6.day6b [] `shouldBe` "hello world"
     describe "Day18" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"
     describe "Day18b" $ do it "works" $ do Day6.day6b [] `shouldBe` "hello world"
     describe "Day19" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"

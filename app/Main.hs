@@ -77,13 +77,19 @@ main = do
                    "day14" -> show . day14
                    "day14b" -> show . day14b
                    "day15" -> show . day15
-                   "day15b" -> \ls ->                  
+                   "day15b" -> \ls ->
                      let (_, t, s) = day15b $ ls
                      in  s ++ "\n" ++ (show t)
                    "day16" -> show . day16
                    "day16b" -> show . day16b
                    "day17" -> show . day17
-                   "day17b" -> show . day17b
+                   "day17b" -> \ls ->
+                     let (a, b, c, r,
+                          output, answer) = day17b ls :: (String, String, String, String, String, Integer)
+                     in  "\nA=" ++ a ++ "\nB=" ++ b ++ "\nC=" ++ c ++
+                         "\nRoute=" ++ r ++ 
+                         "\n" ++ output ++
+                         "\n\nAnswer=" ++ show answer
                    "day18" -> show . day18
                    "day18b" -> show . day18b
                    "day19" -> show . day19

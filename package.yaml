@@ -25,6 +25,8 @@ dependencies:
 - split
 - containers
 - sort
+- vector
+- extra
 
 library:
   source-dirs: src
