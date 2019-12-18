@@ -440,8 +440,7 @@ main =
                   ,"#########"
                   ]
       it "works" $ do
-        (m, sol) <- Day18.day18 maze0
-        sol `shouldBe` Just (8, "ba@")
+        Day18.day18 maze0 `shouldBe` 8
 
       let maze1 = ["########################"
                   ,"#f.D.E.e.C.b.A.@.a.B.c.#"
@@ -450,8 +449,7 @@ main =
                   ,"########################"
                   ]
       it "runs the second eample" $ do
-        (m, sol) <- Day18.day18 maze1
-        sol `shouldBe` Just (86, "fedcba@")
+        Day18.day18 maze1 `shouldBe` 86
 
       let maze2 = ["########################"
                   ,"#...............b.C.D.f#"
@@ -460,8 +458,7 @@ main =
                   ,"########################"
                   ]
       it "runs the third eample" $ do
-        (m, sol) <- Day18.day18 maze2
-        fmap fst sol `shouldBe` Just 132
+        Day18.day18 maze2 `shouldBe` 132
 
       let maze3 = ["#################"
                   ,"#i.G..c...e..H.p#"
@@ -474,8 +471,7 @@ main =
                   ,"#################"
                   ]
       it "runs the fourth eample" $ do
-        (m, sol) <- Day18.day18 maze3
-        fmap fst sol `shouldBe` Just 136
+        Day18.day18 maze3 `shouldBe` 136
 
 
       let maze4 = ["########################"
@@ -486,8 +482,7 @@ main =
                   ,"########################"
                   ]
       it "runs the fifth eample" $ do
-        (m, sol) <- Day18.day18 maze4
-        fmap fst sol `shouldBe` Just 81
+        Day18.day18 maze4 `shouldBe` 81
 
     describe "Day18b" $ do
       it "runs the first example" $ do

@@ -233,7 +233,7 @@ openWith m collected xy =
         otherwise -> error $ "unknown at " ++ (show xy) ++ ":" ++ (show at)
 
 
-day18 ls = do
+day18' ls = do
   let maze = parse ls
   (maze', steps, path) <- bfsHunt maze
   return (mazeDraw maze, Just (steps, path))
@@ -260,7 +260,7 @@ bfsHunt maze = do
                        hFlush stdout
                        return $ report + 100
                      else return report
-          
+
           if Set.member (p, keys maze) reached
           then do
 --            putStrLn $ "Skipping after " ++ (show steps) ++ " with found: " ++ path
@@ -283,7 +283,7 @@ bfsHunt maze = do
                                    else Heap.insert (steps + steps', (maze', k : path)) pq
                              ) pq' ns
             bfsHunt0 pq'' reached' report'
-                             
+
 
 
 mazeDraw m =
@@ -446,7 +446,7 @@ all of the keys?
 day18b ls = do
    let maze = parse ls
    {- update the maze -}
-       (x, y) = pos maze   
+       (x, y) = pos maze
        t = [((x-1, y-1), '@'), ((x  , y-1), '#'), ((x+1, y-1), '@'),
             ((x-1, y  ), '#'), ((x  , y  ), '#'), ((x+1, y  ), '#'),
             ((x-1, y+1), '@'), ((x  , y+1), '#'), ((x+1, y+1), '@')] & Map.fromList
@@ -475,7 +475,7 @@ bfsHuntMulti maze positions = do
                        hFlush stdout
                        return $ report + 100
                      else return report
-          
+
           if Set.member (coords, collected) reached
           then do
 --            putStrLn $ "Skipping after " ++ (show steps) ++ " with found: " ++ path
@@ -489,7 +489,7 @@ bfsHuntMulti maze positions = do
             let reached' = Set.insert (coords, collected) reached
                 pq'' = Set.foldl (\pq pos ->
                          let coords' = Set.delete pos coords
-                             ns = nextStepsFrom maze collected pos 
+                             ns = nextStepsFrom maze collected pos
                          in  foldl (\pq (k, pos', steps') ->
                                let collected' = Set.insert k collected
                                    coords'' = Set.insert pos' coords'
@@ -513,3 +513,76 @@ bfsHuntMulti maze positions = do
                              ) pq' ns
             bfsHunt0 pq'' reached' report'
 -}
+
+
+day18 ls =
+  let maze = parse ls
+      {- Map (from, to) -> (distance, {doors} -}
+      t = tiles maze
+      keys = Map.filter (\c -> isLower c || c == '@') t & Map.toList
+      paths = [((from, to), (d, doors))
+               | ((fx, fy), from) <- keys,
+                 ((tx, ty), to) <- keys,
+                 let path = flood t (fx, fy) (tx, ty),
+                 isJust path,
+                 let Just (d, doors) = path] & Map.fromList
+      hunt = bfsHuntPaths paths '@'
+  in  hunt
+
+
+flood :: Map.Map Coord Char -> Coord -> Coord -> Maybe (Int, Set.Set Char)
+flood tiles from to =
+  case flood0 [Set.singleton from] Set.empty of
+    Nothing -> Nothing
+    Just path -> Just (length path, map (tiles Map.!) path & filter isUpper & Set.fromList & Set.map toLower)
+  where
+    flood0 (p:ps) visited =
+      if Set.member to p
+      then Just (backtrack to ps)
+      else
+        let next = Set.unions (Set.map (\xy -> neighs xy) p) `Set.difference` visited
+        in  if Set.null next then Nothing
+            else
+              let visited' = visited `Set.union` next
+              in  flood0 (next:p:ps) visited'
+    neighs (x, y) =
+      [(x-1, y), (x+1, y), (x, y-1), (x, y+1)] & filter (\xy -> tiles Map.! xy /= '#') & Set.fromList
+    adjacent (x, y) (x2,y2) = abs(x2 - x) + abs(y2 - y) == 1
+    backtrack :: Coord -> [Set.Set Coord] -> [Coord]
+    backtrack _ [] = []
+    backtrack to (p:ps) =
+      let prev = (Set.filter (adjacent to) p & Set.findMin)
+      in  prev : (backtrack prev ps)
+
+
+bfsHuntPaths :: Map.Map (Char, Char) (Int, Set.Set Char) -> Char -> Int
+bfsHuntPaths paths start =
+  bfsHunt0 (Heap.singleton (0, ('@', Set.singleton '@'))) Set.empty
+  where
+    allNodes = Map.keysSet paths & Set.toList & map fst & Set.fromList
+    bfsHunt0 :: Heap.MinPrioHeap Int (Char, Set.Set Char) -> Set.Set (Char, Set.Set Char) -> Int
+    bfsHunt0 pq seen =
+      let Just ((steps, (at, visited)), pq') = Heap.view pq
+--          putStrLn $ "Visiting: " ++ (show steps) ++ " " ++ (show at) ++ " : " ++ (show visited)
+      in  if Set.size visited == Set.size allNodes
+          then steps
+          else if Set.member (at, visited) seen
+          then bfsHunt0 pq' seen
+          else
+            {- Compute neighbors reachable right now -}
+            let seen' = Set.insert (at, visited) seen
+                ns = pathReachable at visited
+                   & filter (\(dist, dest) -> not $ Set.member dest visited)
+                pq'' = foldl (\pq (steps', dest) ->
+                               let visited' = Set.insert dest visited
+                               in  if Set.member (dest, visited') seen'
+                                   then pq
+                                   else Heap.insert (steps + steps', (dest, visited')) pq
+                             ) pq' ns
+            in  bfsHunt0 pq'' seen'
+    pathReachable :: Char -> Set.Set Char -> [(Int, Char)]
+    pathReachable from visited =
+      paths & Map.filterWithKey (\(f, t) (steps, blockedBy) -> f == from
+                                                            && Set.null (blockedBy `Set.difference` visited))
+            & Map.toList
+            & map (\((_, dest),(dist, _)) -> (dist, dest))

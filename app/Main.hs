@@ -46,12 +46,6 @@ main = do
     day17Dump ls
     return ()
 
-  else if head args == "day18"
-  then do
-    ans <- day18 ls
-    putStrLn $ show ans
-    return ()
-
   else if head args == "day18b"
   then do
     ans <- day18b ls
@@ -102,11 +96,7 @@ main = do
                          "\nRoute=" ++ r ++ 
                          "\n" ++ output ++
                          "\n\nAnswer=" ++ show answer
-                   "day18" -> \ls -> "hello world"
-{-
-                     let (m, next) = day18 ls
-                     in  m ++ "\n\n" ++ (show next)
--}
+                   "day18" -> show . day18
                    "day18b" -> \ls -> "hello world"
                    "day19" -> show . day19
                    "day19b" -> show . day19b
