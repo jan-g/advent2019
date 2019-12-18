@@ -489,7 +489,7 @@ main =
         let maze0 = ["#######"
                     ,"#a.#Cd#"
                     ,"##...##"
-                    ,"##.@.##" 
+                    ,"##.@.##"
                     ,"##...##"
                     ,"#cB#Ab#"
                     ,"#######"
@@ -519,7 +519,7 @@ main =
                     ,"#############"
                     ]
         (steps, path) <- Day18.day18b maze0
-        (steps, path) `shouldBe` (32, "lkjihgfedcba@")
+        steps `shouldBe` 32
 
       it "runs the fourth example" $ do
         let maze0 = ["#############"
@@ -534,7 +534,6 @@ main =
                     ]
         (steps, path) <- Day18.day18b maze0
         steps `shouldBe` 72
-
 
 
 {-

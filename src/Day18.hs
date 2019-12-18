@@ -124,170 +124,14 @@ How many steps is the shortest path that collects all of the keys?
 
 type Coord = (Integer, Integer)
 
-data Maze = Maze { tiles :: Map.Map Coord Char
-                 , pos :: Coord
-                 , keys :: Set.Set Char  {- lower-cased -}
-                 , keyLoc :: Map.Map Char Coord
-                 }
-  deriving (Show, Eq, Ord)
-
-open :: Maze -> Coord -> Bool
-open m xy =
-  let at = Map.lookup xy (tiles m)
-  in  case at of
-        Just '@' -> True
-        Just '.' -> True
-        Just '#' -> False
-        Just c   -> isLower c || (isUpper c && Set.member (toLower c) (keys m))
-        otherwise -> error $ "unknown at " ++ (show xy) ++ ":" ++ (show at)
+type Maze = Map.Map Coord Char
 
 parse ls =
-  let tiles = [((x, y), c) | (y, line) <- [0..] `zip` ls, (x, c) <- [0..] `zip` line]
-      pos = tiles & filter ((== '@') . snd) & head & fst
-      keyLoc = tiles & filter (isLower . snd) & map (\(p,c) -> (c,p))
-  in  Maze { tiles=Map.fromList tiles
-           , pos=pos
-           , keys=Set.empty
-           , keyLoc=Map.fromList keyLoc
-           }
-
-neighbour m (x,y) = neighbourWithout m (keys m) (x, y)
-
-{- If xy is reachable from m's position, Just (number of steps) -}
-reachable :: Maze -> Coord -> Maybe Int
-reachable m xy = reachableFrom m (pos m) xy
-
-
-reachableFrom :: Maze -> Coord -> Coord -> Maybe Int
-reachableFrom m sxy xy =
-  let start = Set.singleton sxy
-  in  bfs [start] start 0
-  where
-    bfs (a:as) reached steps =
-      if Set.member xy a
-      then Just steps
-      else
-        let new = Set.unions (Set.map (neighbour m) a) `Set.difference` reached
-        in  if Set.null new
-            then Nothing
-            else bfs (new:a:as) (reached `Set.union` new) (steps + 1)
-
-
-{- Is this maze solved? -}
-done m = Map.keysSet (keyLoc m) == keys m
-
-
-{- Work out next possible steps that are reachable -}
-nextSteps :: Maze -> [(Char, Int)]
-nextSteps m =
-  let unclaimedKeys = Map.keysSet (keyLoc m) `Set.difference` keys m
-      reach = [(k, d) | k <- Set.toList unclaimedKeys,
-                                     let xy = keyLoc m Map.! k,
-                                     let r = reachable m xy,
-                                     isJust r,
-                                     let Just d = r]
-  in  reach
-
-
-nextStepsFrom :: Maze -> Set.Set Char -> Coord -> [(Char, Coord, Int)]
-nextStepsFrom m collected sxy =
-  let unclaimedKeys = Map.keysSet (keyLoc m) `Set.difference` collected
-      reach = [(k, xy, d) | k <- Set.toList unclaimedKeys,
-                                     let xy = keyLoc m Map.! k,
-                                     let r = reachableFromWithout m collected sxy xy,
-                                     isJust r,
-                                     let Just d = r]
-  in  reach
-
-reachableFromWithout :: Maze -> Set.Set Char -> Coord -> Coord -> Maybe Int
-reachableFromWithout m collected sxy xy =
-  let start = Set.singleton sxy
-  in  bfs [start] start 0
-  where
-    bfs (a:as) reached steps =
-      if Set.member xy a
-      then Just steps
-      else
-        let new = Set.unions (Set.map (neighbourWithout m collected) a) `Set.difference` reached
-        in  if Set.null new
-            then Nothing
-            else bfs (new:a:as) (reached `Set.union` new) (steps + 1)
-
-
-neighbourWithout m collected (x,y) =
-  let c = (tiles m) Map.! (x,y)
-  in
-    {- Tiles that have an uncollected key can't be passed -}
-    if isLower c && not (Set.member c collected)
-    then Set.empty
-    else [(x-1,y), (x+1, y), (x,y-1), (x,y+1)] & filter (openWith m collected) & Set.fromList
-
-openWith :: Maze -> Set.Set Char -> Coord -> Bool
-openWith m collected xy =
-  let at = Map.lookup xy (tiles m)
-  in  case at of
-        Just '@' -> True
-        Just '.' -> True
-        Just '#' -> False
-        Just c   -> isLower c || (isUpper c && Set.member (toLower c) collected)
-        otherwise -> error $ "unknown at " ++ (show xy) ++ ":" ++ (show at)
-
-
-day18' ls = do
-  let maze = parse ls
-  (maze', steps, path) <- bfsHunt maze
-  return (mazeDraw maze, Just (steps, path))
-
-
-{- bfs hunt
-   we have: [(maze, steps, path)] and {{reached}}
-   take the shortest number of steps so far.
-   If it's finished, return it.
-   If not reached (examine the keyset), note it as reached.
-   Otherwise, expand it - that is, insert all reachable results.
-   -}
-
-bfsHunt :: Maze -> IO (Maze, Int, String)
-bfsHunt maze = do
-  bfsHunt0 (Heap.singleton (0, (maze, "@"))) Set.empty 0
-  where
-    allKeys = Map.keysSet (keyLoc maze) & Set.size
-    bfsHunt0 :: Heap.MinPrioHeap Int (Maze, [Char]) -> Set.Set (Char, Set.Set Char) -> Int -> IO (Maze, Int, [Char])
-    bfsHunt0 pq reached report = do
-          let Just ((steps, (maze, path@(p:ps))), pq') = Heap.view pq
-          report' <- if steps > report then do
-                       putStrLn $ show steps
-                       hFlush stdout
-                       return $ report + 100
-                     else return report
-
-          if Set.member (p, keys maze) reached
-          then do
---            putStrLn $ "Skipping after " ++ (show steps) ++ " with found: " ++ path
-            bfsHunt0 pq' reached report'
-          else if Set.size (keys maze) == allKeys
-          then do
---            putStrLn $ "Returning solution after " ++ (show steps) ++ " with found: " ++ path
-            return $ (maze, steps, path)
-          else do
---            putStrLn $ "Expanding after " ++ (show steps) ++ " steps, with found keys: " ++ path
-            let reached' = Set.insert (p, keys maze) reached
-                ns = nextSteps maze
-                pq'' = foldl (\pq (k, steps') ->
-                               let keys' = Set.insert k (keys maze)
-                                   maze' = maze { pos=(keyLoc maze) Map.! k
-                                                , keys=keys'
-                                                }
-                               in  if Set.member (k, keys') reached
-                                   then pq
-                                   else Heap.insert (steps + steps', (maze', k : path)) pq
-                             ) pq' ns
-            bfsHunt0 pq'' reached' report'
-
+  [((x, y), c) | (y, line) <- [0..] `zip` ls, (x, c) <- [0..] `zip` line] & Map.fromList
 
 
 mazeDraw m =
-  drawMapWith mazeChar (tiles m) & unlines
+  drawMapWith mazeChar m & unlines
   where
     mazeChar p (Just c) = c
 
@@ -443,93 +287,25 @@ all of the keys?
 
 -- xdfsqzbvlyampehjgwtoucnrki@ 4118
 
-day18b ls = do
-   let maze = parse ls
-   {- update the maze -}
-       (x, y) = pos maze
-       t = [((x-1, y-1), '@'), ((x  , y-1), '#'), ((x+1, y-1), '@'),
-            ((x-1, y  ), '#'), ((x  , y  ), '#'), ((x+1, y  ), '#'),
-            ((x-1, y+1), '@'), ((x  , y+1), '#'), ((x+1, y+1), '@')] & Map.fromList
-       t' = Map.union t (tiles maze)
-       maze' = maze { tiles=t' }
-       pos' = Map.filter (== '@') t' & Map.keysSet & Set.toList
-   putStrLn $ mazeDraw maze'
-   (steps, path) <- bfsHuntMulti maze' pos'
-   return (steps, path)
-
-
-bfsHuntMulti :: Maze -> [Coord] -> IO (Int, String)
-bfsHuntMulti maze positions = do
-  bfsHuntMulti0 (Heap.singleton (0, (Set.fromList positions, Set.empty, "@"))) Set.empty 0
-  where
-    t = tiles maze
-    allKeys = Map.keysSet (keyLoc maze) & Set.size
-    bfsHuntMulti0 :: Heap.MinPrioHeap Int (Set.Set Coord, Set.Set Char, String)  {- positions, acquired, order -}
-             -> Set.Set (Set.Set Coord, Set.Set Char)  {- states visited -}
-             -> Int  {- reporting depth -}
-             -> IO (Int, [Char])  {- step count plus collection order -}
-    bfsHuntMulti0 pq reached report = do
-          let Just ((steps, (coords, collected, path@(p:ps))), pq') = Heap.view pq
-          report' <- if steps > report then do
-                       putStrLn $ show steps
-                       hFlush stdout
-                       return $ report + 100
-                     else return report
-
-          if Set.member (coords, collected) reached
-          then do
---            putStrLn $ "Skipping after " ++ (show steps) ++ " with found: " ++ path
-            bfsHuntMulti0 pq' reached report'
-          else if Set.size collected == allKeys
-          then do
---            putStrLn $ "Returning solution after " ++ (show steps) ++ " with found: " ++ path
-            return $ (steps, path)
-          else do
---            putStrLn $ "Expanding after " ++ (show steps) ++ " steps, with found keys: " ++ path
-            let reached' = Set.insert (coords, collected) reached
-                pq'' = Set.foldl (\pq pos ->
-                         let coords' = Set.delete pos coords
-                             ns = nextStepsFrom maze collected pos
-                         in  foldl (\pq (k, pos', steps') ->
-                               let collected' = Set.insert k collected
-                                   coords'' = Set.insert pos' coords'
-                               in  if Set.member (coords'', collected') reached
-                                   then pq
-                                   else Heap.insert (steps + steps', (coords'', collected', k : path)) pq
-
-                             ) pq ns
-                       ) pq' coords
-            bfsHuntMulti0 pq'' reached' report'
-{-
-                ns = nextSteps
-                pq'' = foldl (\pq (k, steps') ->
-                               let keys' = Set.insert k (keys maze)
-                                   maze' = maze { pos=(keyLoc maze) Map.! k
-                                                , keys=keys'
-                                                }
-                               in  if Set.member (k, keys') reached
-                                   then pq
-                                   else Heap.insert (steps + steps', (maze', k : path)) pq
-                             ) pq' ns
-            bfsHunt0 pq'' reached' report'
--}
-
 
 day18 ls =
   let maze = parse ls
       {- Map (from, to) -> (distance, {doors} -}
-      t = tiles maze
-      keys = Map.filter (\c -> isLower c || c == '@') t & Map.toList
+      keys = Map.filter (\c -> isLower c || c == '@') maze & Map.toList
       paths = [((from, to), (d, doors))
                | ((fx, fy), from) <- keys,
                  ((tx, ty), to) <- keys,
-                 let path = flood t (fx, fy) (tx, ty),
+                 let path = flood maze (fx, fy) (tx, ty),
                  isJust path,
                  let Just (d, doors) = path] & Map.fromList
       hunt = bfsHuntPaths paths '@'
   in  hunt
 
 
+{- Flood-trace (BFS) a path from a starting to finishing coordinate
+   Don't walk over walls; everything else is passable - although we also return
+   the set of "doors" (ie, A B C etc) we've moved over. This is coerced to
+   LC to match up with the set of keys. -}
 flood :: Map.Map Coord Char -> Coord -> Coord -> Maybe (Int, Set.Set Char)
 flood tiles from to =
   case flood0 [Set.singleton from] Set.empty of
@@ -583,6 +359,87 @@ bfsHuntPaths paths start =
     pathReachable :: Char -> Set.Set Char -> [(Int, Char)]
     pathReachable from visited =
       paths & Map.filterWithKey (\(f, t) (steps, blockedBy) -> f == from
+                                                            && Set.null (blockedBy `Set.difference` visited))
+            & Map.toList
+            & map (\((_, dest),(dist, _)) -> (dist, dest))
+
+
+day18b ls = do
+   let maze = parse ls :: Maze
+
+   {- update the maze -}
+       (x, y) = pos maze '@' & Set.toList & head
+       t = [((x-1, y-1), '1'), ((x  , y-1), '#'), ((x+1, y-1), '2'),
+            ((x-1, y  ), '#'), ((x  , y  ), '#'), ((x+1, y  ), '#'),
+            ((x-1, y+1), '3'), ((x  , y+1), '#'), ((x+1, y+1), '4')] & Map.fromList
+       maze' = Map.union t maze
+       pos' = Set.fromList "1234"
+       
+       keys = Map.filter (\c -> isLower c || isDigit c) maze' & Map.toList
+       paths = [((from, to), (d, doors))
+                | ((fx, fy), from) <- keys,
+                  ((tx, ty), to) <- keys,
+                  not $ isDigit to,
+                  let path = flood maze' (fx, fy) (tx, ty),
+                  isJust path,
+                  let Just (d, doors) = path] & Map.fromList
+
+   putStrLn $ mazeDraw maze'
+   putStrLn $ "keys are " ++ (show keys)
+   putStrLn $ show $ Map.filterWithKey (\(f,t) v -> isDigit f) paths
+   putStrLn $ show $ paths
+   steps <- bfsHuntMulti paths pos'
+   return steps
+
+
+pos maze c = maze & Map.filter (==c) & Map.keysSet
+
+
+bfsHuntMulti :: Map.Map (Char, Char) (Int, Set.Set Char) -> Set.Set Char -> IO (Int, String)
+bfsHuntMulti paths positions = do
+  bfsHuntMulti0 (Heap.singleton (0, (positions, Set.empty, ""))) Set.empty 0
+  where
+    allNodes = Map.keysSet paths & Set.toList & map fst & filter isLower & Set.fromList
+    bfsHuntMulti0 :: Heap.MinPrioHeap Int (Set.Set Char, Set.Set Char, String)  {- positions, acquired, order -}
+             -> Set.Set (Set.Set Char, Set.Set Char)  {- states visited: positions of droids, keys held -}
+             -> Int  {- reporting depth -}
+             -> IO (Int, [Char])  {- step count plus collection order -}
+    bfsHuntMulti0 pq reached report = do
+          let Just ((steps, (locations, collected, path)), pq') = Heap.view pq
+          report' <- if steps > report then do
+                       putStrLn $ show steps
+                       hFlush stdout
+                       return $ report + 100
+                     else return report
+
+          if Set.member (locations, collected) reached
+          then do
+--            putStrLn $ "Skipping after " ++ (show steps) ++ " with found: " ++ path
+            bfsHuntMulti0 pq' reached report'
+          else if Set.size collected == Set.size allNodes
+          then do
+            putStrLn $ "Returning solution after " ++ (show steps) ++ " with found: " ++ path
+            return $ (steps, path)
+          else do
+--            putStrLn $ "Expanding after " ++ (show steps) ++ " steps, with found keys: " ++ path
+            let reached' = Set.insert (locations, collected) reached
+                pq'' = Set.foldl (\pq pos ->
+                         let locations' = Set.delete pos locations
+                             ns = pathReachable pos collected :: [(Int, Char)]
+                         in  foldl (\pq (steps', pos') ->
+                               let collected' = Set.insert pos' collected
+                                   locations'' = Set.insert pos' locations'
+                               in  if Set.member (locations'', collected') reached'
+                                   then pq
+                                   else Heap.insert (steps + steps', (locations'', collected', pos' : path)) pq
+                             ) pq ns
+                       ) pq' locations
+              
+            bfsHuntMulti0 pq'' reached' report'
+    pathReachable :: Char -> Set.Set Char -> [(Int, Char)]
+    pathReachable from visited =
+      paths & Map.filterWithKey (\(f, t) (steps, blockedBy) -> f == from
+                                                            && not (Set.member t visited)
                                                             && Set.null (blockedBy `Set.difference` visited))
             & Map.toList
             & map (\((_, dest),(dist, _)) -> (dist, dest))

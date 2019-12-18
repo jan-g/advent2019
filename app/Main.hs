@@ -93,7 +93,7 @@ main = do
                      let (a, b, c, r,
                           output, answer) = day17b ls :: (String, String, String, String, String, Integer)
                      in  "\nA=" ++ a ++ "\nB=" ++ b ++ "\nC=" ++ c ++
-                         "\nRoute=" ++ r ++ 
+                         "\nRoute=" ++ r ++
                          "\n" ++ output ++
                          "\n\nAnswer=" ++ show answer
                    "day18" -> show . day18
@@ -126,4 +126,3 @@ day17Dump ls = do
       prog' = Intcode.poke prog 0 2
   Left prog'' <- IS.runIO (IS.runUntil 51) prog' []
   return ()
-  
