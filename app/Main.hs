@@ -46,6 +46,18 @@ main = do
     day17Dump ls
     return ()
 
+  else if head args == "day18"
+  then do
+    ans <- day18 ls
+    putStrLn $ show ans
+    return ()
+
+  else if head args == "day18b"
+  then do
+    ans <- day18b ls
+    putStrLn $ show ans
+    return ()
+
   else do
     let action = case args !! 0 of
                    "day1" -> show . day1
@@ -90,8 +102,12 @@ main = do
                          "\nRoute=" ++ r ++ 
                          "\n" ++ output ++
                          "\n\nAnswer=" ++ show answer
-                   "day18" -> show . day18
-                   "day18b" -> show . day18b
+                   "day18" -> \ls -> "hello world"
+{-
+                     let (m, next) = day18 ls
+                     in  m ++ "\n\n" ++ (show next)
+-}
+                   "day18b" -> \ls -> "hello world"
                    "day19" -> show . day19
                    "day19b" -> show . day19b
                    "day20" -> show . day20

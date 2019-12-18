@@ -27,6 +27,7 @@ dependencies:
 - sort
 - vector
 - extra
+- heap >= 1.0.4
 
 library:
   source-dirs: src

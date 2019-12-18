@@ -203,4 +203,4 @@ day11b ls =
 
 paint :: Hull -> [String]
 paint hull =
-  drawMapWith (\_ x -> case x of Nothing -> '_'; Just Black -> ' '; Just White -> '#') (fst hull) & reverse
+  drawMapWith (\_ x -> case x of Nothing -> '.'; Just Black -> '.'; Just White -> '#') (fst hull) & reverse

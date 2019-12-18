@@ -429,16 +429,118 @@ main =
 
       let route = "R,8,R,8,R,4,R,4,R,8,L,6,L,2,R,4,R,4,R,8,R,8,R,8,L,6,L,2"
           r' = Day17.unrewrite route
-          
+
       it "compresses another" $ do
         let (a, b, c, r'') = Day17.shorten r'
         (a, b, c, r'') `shouldBe` ("R,8,R,8","R,4,R,4","R,8,L,6,L,2","A,B,C,B,A,C")
 
     describe "Day18" $ do
+      let maze0 = ["#########"
+                  ,"#b.A.@.a#"
+                  ,"#########"
+                  ]
       it "works" $ do
-        Day18.day18 [] `shouldBe` "hello world"
+        (m, sol) <- Day18.day18 maze0
+        sol `shouldBe` Just (8, "ba@")
 
-    describe "Day18b" $ do it "works" $ do Day18.day18b [] `shouldBe` "hello world"
+      let maze1 = ["########################"
+                  ,"#f.D.E.e.C.b.A.@.a.B.c.#"
+                  ,"######################.#"
+                  ,"#d.....................#"
+                  ,"########################"
+                  ]
+      it "runs the second eample" $ do
+        (m, sol) <- Day18.day18 maze1
+        sol `shouldBe` Just (86, "fedcba@")
+
+      let maze2 = ["########################"
+                  ,"#...............b.C.D.f#"
+                  ,"#.######################"
+                  ,"#.....@.a.B.c.d.A.e.F.g#"
+                  ,"########################"
+                  ]
+      it "runs the third eample" $ do
+        (m, sol) <- Day18.day18 maze2
+        fmap fst sol `shouldBe` Just 132
+
+      let maze3 = ["#################"
+                  ,"#i.G..c...e..H.p#"
+                  ,"########.########"
+                  ,"#j.A..b...f..D.o#"
+                  ,"########@########"
+                  ,"#k.E..a...g..B.n#"
+                  ,"########.########"
+                  ,"#l.F..d...h..C.m#"
+                  ,"#################"
+                  ]
+      it "runs the fourth eample" $ do
+        (m, sol) <- Day18.day18 maze3
+        fmap fst sol `shouldBe` Just 136
+
+
+      let maze4 = ["########################"
+                  ,"#@..............ac.GI.b#"
+                  ,"###d#e#f################"
+                  ,"###A#B#C################"
+                  ,"###g#h#i################"
+                  ,"########################"
+                  ]
+      it "runs the fifth eample" $ do
+        (m, sol) <- Day18.day18 maze4
+        fmap fst sol `shouldBe` Just 81
+
+    describe "Day18b" $ do
+      it "runs the first example" $ do
+        let maze0 = ["#######"
+                    ,"#a.#Cd#"
+                    ,"##...##"
+                    ,"##.@.##" 
+                    ,"##...##"
+                    ,"#cB#Ab#"
+                    ,"#######"
+                    ]
+        (steps, path) <- Day18.day18b maze0
+        steps `shouldBe` 8
+
+      it "runs the second example" $ do
+        let maze0 = ["###############"
+                    ,"#d.ABC.#.....a#"
+                    ,"######...######"
+                    ,"######.@.######"
+                    ,"######...######"
+                    ,"#b.....#.....c#"
+                    ,"###############"
+                    ]
+        (steps, path) <- Day18.day18b maze0
+        steps `shouldBe` 24
+
+      it "runs the third example" $ do
+        let maze0 = ["#############"
+                    ,"#DcBa.#.GhKl#"
+                    ,"#.###...#I###"
+                    ,"#e#d#.@.#j#k#"
+                    ,"###C#...###J#"
+                    ,"#fEbA.#.FgHi#"
+                    ,"#############"
+                    ]
+        (steps, path) <- Day18.day18b maze0
+        (steps, path) `shouldBe` (32, "lkjihgfedcba@")
+
+      it "runs the fourth example" $ do
+        let maze0 = ["#############"
+                    ,"#g#f.D#..h#l#"
+                    ,"#F###e#E###.#"
+                    ,"#dCba...BcIJ#"
+                    ,"#####.@.#####"
+                    ,"#nK.L...G...#"
+                    ,"#M###N#H###.#"
+                    ,"#o#m..#i#jk.#"
+                    ,"#############"
+                    ]
+        (steps, path) <- Day18.day18b maze0
+        steps `shouldBe` 72
+
+
 
 {-
     describe "Day19" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"
