@@ -374,7 +374,7 @@ day18b ls = do
             ((x-1, y+1), '3'), ((x  , y+1), '#'), ((x+1, y+1), '4')] & Map.fromList
        maze' = Map.union t maze
        pos' = Set.fromList "1234"
-       
+
        keys = Map.filter (\c -> isLower c || isDigit c) maze' & Map.toList
        paths = [((from, to), (d, doors))
                 | ((fx, fy), from) <- keys,
@@ -434,7 +434,7 @@ bfsHuntMulti paths positions = do
                                    else Heap.insert (steps + steps', (locations'', collected', pos' : path)) pq
                              ) pq ns
                        ) pq' locations
-              
+
             bfsHuntMulti0 pq'' reached' report'
     pathReachable :: Char -> Set.Set Char -> [(Int, Char)]
     pathReachable from visited =
@@ -443,3 +443,71 @@ bfsHuntMulti paths positions = do
                                                             && Set.null (blockedBy `Set.difference` visited))
             & Map.toList
             & map (\((_, dest),(dist, _)) -> (dist, dest))
+
+
+reachableKeys maze from visited =
+  let waveFronts = bfs [Set.singleton from] Set.empty
+      wf2 = [0..] `zip` (reverse waveFronts)
+          & foldl (\keyToDist (d, ps) ->
+                    let cs = Set.map (maze Map.!) ps
+                           & Set.filter isLower
+                           & (`Set.difference` visited)
+                    in  Map.fromList [(c, d) | c <- Set.toList cs] `Map.union` keyToDist
+                    ) Map.empty
+  in  wf2
+  where
+    bfs (p:ps) seen =
+      let next = Set.unions (Set.map neighs p) `Set.difference` seen
+      in  if Set.null next then (p:ps)
+          else bfs (next:p:ps) (Set.union next seen)
+
+    neighs (x,y) =
+      [(x-1,y), (x+1,y), (x,y-1), (x,y+1)] & filter (\xy ->
+                                                      let c = maze Map.! xy
+                                                      in  not (c == '#' ||
+                                                              (isUpper c && not (Set.member (toLower c) visited))))
+                                           & Set.fromList
+
+day18c ls = do
+  let maze = parse ls
+      {- Map (from, to) -> (distance, {doors} -}
+      starts = maze & Map.filter (== '@') & Map.keysSet
+      dists = reachableKeys maze (Set.findMin starts) Set.empty
+  putStrLn $ "Distances to reachable keys: " ++ (show dists)
+  hFlush stdout
+  let (d, memo) = minwalk maze starts Map.empty
+  print d
+  print $ Map.size memo
+  return d
+
+
+minwalk maze positions visited =
+  minwalk0 positions Set.empty Map.empty
+  where
+    minwalk0 positions visited memo =
+      case Map.lookup (positions, visited) memo of
+        Just v -> (v, memo)
+        Nothing ->
+          let newKeys = reachableAll positions visited :: [(Char, Int, Coord, Coord)] {- key reachable in distance from where at where -}
+          in  if newKeys == []
+              then (0, Map.insert (positions, visited) 0 memo)
+              else
+                let (memo', acc) = foldl (\(memo, acc) (key, dist, from, at) ->
+                                           let pos' = Set.insert at (Set.delete from positions)
+                                               (d, memo') = minwalk0 pos' (Set.insert key visited) memo
+                                           in (memo', acc ++ [dist + d])
+                                         ) (memo, []) newKeys
+                    result = minimum acc
+                    memo'' = Map.insert (positions, visited) result memo'
+                in (result, memo'')
+    locations = maze & Map.filter isLower
+                     & Map.toList
+                     & map (\((x,y),c) -> (c, (x,y)))
+                     & Map.fromList
+    reachableAll positions visited =
+      positions & Set.toList
+                & map (\from ->
+                        let dests = reachableKeys maze from visited
+                        in  dests & Map.toList
+                                  & map (\(ch, d) -> (ch, d, from, locations Map.! ch)))
+                & concat

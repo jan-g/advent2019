@@ -533,8 +533,19 @@ main =
                     ,"#############"
                     ]
         (steps, path) <- Day18.day18b maze0
-        steps `shouldBe` 72
+        steps `shouldBe` 72 
 
+    describe "day 18c" $ do
+      let maze4 = ["########################"
+                  ,"#@..............ac.GI.b#"
+                  ,"###d#e#f################"
+                  ,"###A#B#C################"
+                  ,"###g#h#i################"
+                  ,"########################"
+                  ]
+      it "runs the fifth eample" $ do
+        steps <- Day18.day18c maze4
+        steps `shouldBe` 81
 
 {-
     describe "Day19" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"

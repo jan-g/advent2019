@@ -49,7 +49,14 @@ main = do
   else if head args == "day18b"
   then do
     ans <- day18b ls
-    putStrLn $ show ans
+    print ans
+    return ()
+
+  else if head args == "day18c"
+  then do
+    print "day 18c"
+    ans <- day18c ls
+    print ans
     return ()
 
   else do
