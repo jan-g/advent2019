@@ -125,6 +125,8 @@ day19b ls =
   in  (drawMapWith (\_ c -> fromJust c) grid & unlines,
        counts, (y, left, right), scan !! 1000, answer)
 
+{- My beam was vertical - that is, both sides lay below the y=x line
+   (where y increases downward); so this scan works fine. YMMV. -}
 scanDown prog y left right =
   let y' = succ y
       (_, [belowLeft], _) = run prog [left, y']
