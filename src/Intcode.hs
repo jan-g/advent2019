@@ -3,7 +3,7 @@ module Intcode (
   parse, toProg,
   run,
   peek, poke, addRelative, getRelative,
-  dump
+  dump, opAt, opLen
 ) where
 
 
@@ -16,6 +16,7 @@ import Lib
 
 type Addr = Integer
 data Prog = Prog (Map.Map Addr Integer) Addr
+  deriving (Show, Eq)
 
 parse ns = ns
          & splitOn ","
@@ -109,38 +110,54 @@ instance Show A where
 
 dump (Prog prog offs) o =
   decode (Map.toAscList prog & drop o) []
-  where
-    decode [] out = out
-    decode ((addr, v):(_, a):(_, b):(_, c):ps) d
-      | v `mod` 100 == 1 = decode ps (d ++ [(addr, [v, a, b, c], Add a' b' c')])
-      | v `mod` 100 == 2 = decode ps (d ++ [(addr, [v, a, b, c], Mul a' b' c')])
-      | v `mod` 100 == 7 = decode ps (d ++ [(addr, [v, a, b, c], Lt a' b' c')])
-      | v `mod` 100 == 8 = decode ps (d ++ [(addr, [v, a, b, c], Eq a' b' c')])
-      where a' = toAddr a (v `div` 100)
-            b' = toAddr b (v `div` 1000)
-            c' = toAddr c (v `div` 10000)
-            toAddr x v
-               | v `mod` 10 == 0 = Ind x
-               | v `mod` 10 == 1 = Abs x
-               | v `mod` 10 == 2 = Rel x
-    decode ((addr, v):(_, a):(_, b):ps) d
-      | v `mod` 100 == 5 = decode ps (d ++ [(addr, [v, a, b], JTrue a' b')])
-      | v `mod` 100 == 6 = decode ps (d ++ [(addr, [v, a, b], JFalse a' b')])
-      where a' = toAddr a (v `div` 100)
-            b' = toAddr b (v `div` 1000)
-            toAddr x v
-               | v `mod` 10 == 0 = Ind x
-               | v `mod` 10 == 1 = Abs x
-               | v `mod` 10 == 2 = Rel x
-    decode ((addr, v):(_, a):ps) d
-      | v `mod` 100 == 3 = decode ps (d ++ [(addr, [v, a], Input a')])
-      | v `mod` 100 == 4 = decode ps (d ++ [(addr, [v, a], Output a')])
-      | v `mod` 100 == 9 = decode ps (d ++ [(addr, [v, a], AddOffs a')])
-      where a' = toAddr a (v `div` 100)
-            toAddr x v
-               | v `mod` 10 == 0 = Ind x
-               | v `mod` 10 == 1 = Abs x
-               | v `mod` 10 == 2 = Rel x
-    decode ((addr, v):ps) d
-      | v `mod` 100 == 99 = decode ps (d ++ [(addr, [v], Halt)])
-      | otherwise         = decode ps (d ++ [(addr, [v], Value v)])
+
+decode [] out = out
+decode ((addr, v):(_, a):(_, b):(_, c):ps) d
+  | v `mod` 100 == 1 = decode ps (d ++ [(addr, [v, a, b, c], Add a' b' c')])
+  | v `mod` 100 == 2 = decode ps (d ++ [(addr, [v, a, b, c], Mul a' b' c')])
+  | v `mod` 100 == 7 = decode ps (d ++ [(addr, [v, a, b, c], Lt a' b' c')])
+  | v `mod` 100 == 8 = decode ps (d ++ [(addr, [v, a, b, c], Eq a' b' c')])
+  where a' = toAddr a (v `div` 100)
+        b' = toAddr b (v `div` 1000)
+        c' = toAddr c (v `div` 10000)
+        toAddr x v
+           | v `mod` 10 == 0 = Ind x
+           | v `mod` 10 == 1 = Abs x
+           | v `mod` 10 == 2 = Rel x
+decode ((addr, v):(_, a):(_, b):ps) d
+  | v `mod` 100 == 5 = decode ps (d ++ [(addr, [v, a, b], JTrue a' b')])
+  | v `mod` 100 == 6 = decode ps (d ++ [(addr, [v, a, b], JFalse a' b')])
+  where a' = toAddr a (v `div` 100)
+        b' = toAddr b (v `div` 1000)
+        toAddr x v
+           | v `mod` 10 == 0 = Ind x
+           | v `mod` 10 == 1 = Abs x
+           | v `mod` 10 == 2 = Rel x
+decode ((addr, v):(_, a):ps) d
+  | v `mod` 100 == 3 = decode ps (d ++ [(addr, [v, a], Input a')])
+  | v `mod` 100 == 4 = decode ps (d ++ [(addr, [v, a], Output a')])
+  | v `mod` 100 == 9 = decode ps (d ++ [(addr, [v, a], AddOffs a')])
+  where a' = toAddr a (v `div` 100)
+        toAddr x v
+           | v `mod` 10 == 0 = Ind x
+           | v `mod` 10 == 1 = Abs x
+           | v `mod` 10 == 2 = Rel x
+decode ((addr, v):ps) d
+  | v `mod` 100 == 99 = decode ps (d ++ [(addr, [v], Halt)])
+  | otherwise         = decode ps (d ++ [(addr, [v], Value v)])
+
+
+opAt :: Prog -> Addr -> (Addr, [Integer], I)
+opAt (Prog prog offs) pc = decode (Map.toAscList prog & drop (fromInteger pc)) [] & head
+
+opLen (Add a b c)  = 4
+opLen (Mul a b c)  = 4
+opLen (Input a)    = 2
+opLen (Output a)   = 2
+opLen (JTrue a b)  = 3
+opLen (JFalse a b) = 3
+opLen (Lt a b c)   = 4
+opLen (Eq a b c)   = 4
+opLen (AddOffs a)  = 2
+opLen (Halt)       = 1
+opLen (Value v)    = 1

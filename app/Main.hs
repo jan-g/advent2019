@@ -41,6 +41,10 @@ main = do
   then
     dump ls (read $ args !! 2)
 
+  else if head args == "debug"
+  then
+    debug ls
+
   else if head args == "day17-dump"
   then do
     day17Dump ls
@@ -143,3 +147,9 @@ day17Dump ls = do
       prog' = Intcode.poke prog 0 2
   Left prog'' <- IS.runIO (IS.runUntil 51) prog' []
   return ()
+
+
+debug ls = do
+  let prog = Intcode.parse $ head ls
+  IS.debugger prog 0 []
+  
