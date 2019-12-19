@@ -105,8 +105,18 @@ main = do
                          "\n\nAnswer=" ++ show answer
                    "day18" -> show . day18
                    "day18b" -> \ls -> "hello world"
-                   "day19" -> show . day19
-                   "day19b" -> show . day19b
+                   "day19" -> \ls ->
+                     let (grid, count) = day19 ls
+                     in  grid ++
+                         "\n\nCount=" ++ show count
+                   "day19b" -> \ls ->
+                     let (grid, count, coords, scan, answer) = day19b ls
+                     in  grid
+                         ++ "\n\nCount=" ++ (show count)
+                         ++ "\ncoords = " ++ (show coords)
+                         ++ "\nscan = " ++ (show scan)
+                         ++ "\answer = " ++ (show answer)
+
                    "day20" -> show . day20
                    "day20b" -> show . day20b
                    "day21" -> show . day21
