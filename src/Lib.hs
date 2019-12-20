@@ -4,6 +4,7 @@ module Lib
     , natParser
     , intParser
     , drawMapWith
+    , mapReverse
     ) where
 
 import Data.Array
@@ -39,3 +40,6 @@ drawMapWith f m =
       (x0, x1) = (Set.findMin xs, Set.findMax xs)
       (y0, y1) = (Set.findMin ys, Set.findMax ys)
   in  [[f (x, y) (Map.lookup (x, y) m) | x <- [x0..x1]] | y <- [y0..y1]]
+
+mapReverse :: (Ord v, Ord k) => Map.Map k v -> Map.Map v (Set.Set k)
+mapReverse m = foldl (\m (k,v) -> Map.insertWith Set.union v (Set.singleton k) m) Map.empty (Map.toList m)

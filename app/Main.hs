@@ -121,8 +121,20 @@ main = do
                          ++ "\nscan = " ++ (show scan)
                          ++ "\answer = " ++ (show answer)
 
-                   "day20" -> show . day20
-                   "day20b" -> show . day20b
+                   "day20" -> \ls ->
+                     let (maze, ps, start, end, len, path)
+                           = day20 ls
+                     in  show maze ++
+                         "\n" ++ (show ps) ++
+                         "\n" ++ (show len)
+
+                   "day20b" -> \ls ->
+                     let (maze, ps, start, end, len, path)
+                           = day20b ls
+                     in  show maze ++
+                         "\n" ++ (show ps) ++
+                         "\n" ++ (show len)
+
                    "day21" -> show . day21
                    "day21b" -> show . day21b
                    "day22" -> show . day22
