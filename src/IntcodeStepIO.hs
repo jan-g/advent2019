@@ -1,4 +1,13 @@
-module IntcodeStepIO where
+module IntcodeStepIO (
+  runIO, run0,
+  Intcode.parse,
+  Intcode.peek,
+  Intcode.poke,
+  Intcode.getRelative,
+  Intcode.addRelative,
+  disassemble, debugger,
+  Tracer(..), nullTracer, runUntil, stepFor, stepUntil
+) where
 
 import Intcode (Addr, Prog(..), I(..), A(..), parse, toProg, peek, poke, addRelative, getRelative, dump, opAt, opLen)
 
@@ -226,3 +235,9 @@ parseInputs parser s =
     otherwise -> Nothing
 
 parseIntegerList = (char '[') >>>> sepBy intParser (char ',') <<<< (char ']')
+
+
+nullTracer :: Tracer ()
+nullTracer =
+  let trace prog pc inputs outputs = return $ Right $ nullTracer
+  in  Tracer trace
