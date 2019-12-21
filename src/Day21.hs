@@ -1,5 +1,7 @@
 module Day21 where
 
+import Control.Monad (when)
+
 import Data.Function ((&))
 import Data.List.Split
 import Data.Array
@@ -9,6 +11,7 @@ import Data.Char
 
 import Lib
 import IntcodeStepIO
+import qualified Intcode as I
 import System.IO
 
 {-
@@ -60,40 +63,40 @@ WALK
 
 This one-instruction program sets J to true if and only if there is no ground four tiles away. In other words, it attempts to jump into any hole it finds:
 
-.................
-.................
-@................
-#####.###########
+    .................
+    .................
+    @................
+    #####.###########
 
-.................
-.................
-.@...............
-#####.###########
+    .................
+    .................
+    .@...............
+    #####.###########
 
-.................
-..@..............
-.................
-#####.###########
+    .................
+    ..@..............
+    .................
+    #####.###########
 
-...@.............
-.................
-.................
-#####.###########
+    ...@.............
+    .................
+    .................
+    #####.###########
 
-.................
-....@............
-.................
-#####.###########
+    .................
+    ....@............
+    .................
+    #####.###########
 
-.................
-.................
-.....@...........
-#####.###########
+    .................
+    .................
+    .....@...........
+    #####.###########
 
-.................
-.................
-.................
-#####@###########
+    .................
+    .................
+    .................
+    #####@###########
 
 However, if the springdroid successfully makes it across, it will use an output instruction to indicate the amount of damage to the hull as a single giant integer outside the normal ASCII range.
 
@@ -101,12 +104,9 @@ Program the springdroid with logic that allows it to survey the hull without fal
 
 -}
 
-day21 ls = do
+day21' ls = do
   let prog = parse $ head ls
-  let input0 = "NOT J T\n" ++
-               "OR J T\n"  ++  -- T = true
-               "AND A T\n" ++
-               "AND B T\n" ++
+  let input0 = "OR A T\n"  ++
                "AND C T\n" ++  -- T = false if there's a hole in any of 1, 2, 3 steps
                "NOT T J\n" ++  -- jump over those, but
                "AND D J\n" ++  -- only if there's somewhere to land
@@ -125,10 +125,12 @@ loop prog pc input = do
     loop prog' pc' (line' & map ord & map toInteger)
   else
     return ()
-    
+
 writeOutput o = do
-  putStr $ o & map (\c -> if c < 256 then [c & fromInteger & chr] else "[" ++ show c ++ "]") & concat
+  putStr $ fromAscii o
   hFlush stdout
+
+fromAscii o = o & map (\c -> if c < 256 then [c & fromInteger & chr] else "[" ++ show c ++ "]") & concat
 
 toAscii i = i & map ord & map toInteger
 
@@ -154,13 +156,13 @@ day21b ls = do
   {- d && (h | e & i | e & f) => jump -}
   let input0 = "OR E J\n"  ++
                "AND E J\n" ++  -- J = E
-               "AND I J\n" ++  -- J = E & I 
+               "AND I J\n" ++  -- J = E & I
                "OR  H J\n" ++  -- J = H | E & I
                "OR E T\n" ++
                "AND E T\n" ++
                "AND F T\n" ++
                "OR T J\n" ++
-               
+
                "AND D J\n" ++  -- J = false if there's a hole in any of 1, 2, 3 steps
 
                "OR  A T\n" ++
@@ -168,8 +170,68 @@ day21b ls = do
                "AND B T\n" ++
                "AND C T\n" ++  -- T = True if it's okay to walk to D
                "NOT T T\n" ++
-               "AND T J\n" ++  -- just walk for a bit             
+               "AND T J\n" ++  -- just walk for a bit
                "RUN\n"
              & toAscii
   loop prog 0 input0
   putStrLn "Program ended"
+
+
+day21 ls = do
+  putStrLn $ show $ length instr
+  let prog = parse $ head ls
+  (trial, ans) <- try prog (drop 47987 inputs & filter (not . redundant)) 0
+  putStrLn $ "trial:\n" ++ trial ++ "\n" ++ show ans
+  where
+    try prog (p:ps) n = do
+      let t = toStr p
+      Control.Monad.when (n `mod` 10 == 0) $ do
+        putStrLn $ show n ++ " " ++ show t
+        hFlush stdout
+      let (_, out) = I.run prog (toAscii t)
+          result = dropWhile (< 256) out & take 1
+      if length result == 1
+        then return (t, result)
+        else try prog ps (succ n)
+
+    instr :: [I]
+    instr = do
+      from <- [D, C, B, A, T, J]
+      to <- [T, J]
+      instr <- [And, Or, Not]
+      return $ instr from to
+
+    inputs :: [[I]]
+    inputs = [[]] ++ [i : s | s <- inputs, i <- instr]
+    
+    redundant :: [I] -> Bool
+    redundant [] = False
+    redundant [op] = dest op /= J
+    redundant [o1, o2]
+      | o1 == o2 = True
+      | dest o1 == T = src o2 /= T
+      | otherwise = redundant [o2]
+    redundant (a:b:cs)
+      | a == b = True
+      | dest a == dest b && isNot b && src b /= dest b = True
+      | otherwise = redundant (b:cs)
+    
+    toStr :: [I] -> String
+    toStr i = (map show i) & concat & (++ "WALK\n")
+
+dest (Not _ d) = d
+dest (And _ d) = d
+dest (Or _ d) = d
+src (Not s _) = s
+src (And s _) = s
+src (Or s _) = s
+isNot (Not _ _) = True
+isNot _ = False
+
+data I = Not S S | And S S | Or S S deriving (Eq)
+instance Show I where
+  show (Not x y) = "NOT " ++ show x ++ " " ++ show y ++ "\n"
+  show (And x y) = "AND " ++ show x ++ " " ++ show y ++ "\n"
+  show (Or x y) = "OR " ++ show x ++ " " ++ show y ++ "\n"
+
+data S = A | B | C | D | T | J deriving (Eq, Show)
