@@ -203,7 +203,7 @@ day21 ls = do
 
     inputs :: [[I]]
     inputs = [[]] ++ [i : s | s <- inputs, i <- instr]
-    
+
     redundant :: [I] -> Bool
     redundant [] = False
     redundant [op] = dest op /= J
@@ -215,7 +215,7 @@ day21 ls = do
       | a == b = True
       | dest a == dest b && isNot b && src b /= dest b = True
       | otherwise = redundant (b:cs)
-    
+
     toStr :: [I] -> String
     toStr i = (map show i) & concat & (++ "WALK\n")
 

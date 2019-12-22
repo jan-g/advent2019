@@ -27,6 +27,7 @@ import qualified Day16
 import qualified Day17
 import qualified Day18
 import qualified Day20
+import qualified Day22
 
 
 main :: IO ()
@@ -61,7 +62,7 @@ main =
       it "checks 112233" $ Day4.criterionb 112233 `shouldBe` True
       it "checks 123444" $ Day4.criterionb 123444 `shouldBe` False
       it "checks 111122" $ Day4.criterionb 111122 `shouldBe` True
-      
+
     describe "Day5" $ do
      it "has working intcode" $ do
        let prog = Intcode.parse "3,0,4,0,99"
@@ -115,7 +116,7 @@ main =
         Day6.orbitSize ot "D" `shouldBe` 3
         Day6.orbitSize ot "L" `shouldBe` 7
         Day6.orbitSize ot "COM" `shouldBe` 0
-    
+
     describe "Day6b" $ do
       it "works" $ do
         let input = ["COM)B"
@@ -131,7 +132,7 @@ main =
                     ,"K)L"
                     ,"K)YOU"
                     ,"I)SAN"
-                    ]        
+                    ]
             ot = Day6.parse input
         Day6.orbitalDistance ot "E" "I" `shouldBe` 2
         Day6.orbitalDistance ot "L" "E" `shouldBe` 3
@@ -163,7 +164,7 @@ main =
     describe "Day8" $ do it "" $ do Day8.day8 [] `shouldBe` "hello world"
     describe "Day8b" $ do it "" $ do Day8.day8b [] `shouldBe` "hello world"
     -}
-    
+
     describe "Day9" $ do
       it "runs a quine" $ do
         let input = [109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99]
@@ -209,7 +210,7 @@ main =
       it "sorts alignment sets" $ do
         let coords = [(x, y) | x <- [0..2], y <- [0..2]] :: [Day10.Coord]
         Day10.sortedAlignmentSets (1, 1) coords `shouldBe` [[(0, -1)], [(1, -1)], [(1,0)],[(1,1)],[(0,1)],[(-1,1)],[(-1,0)],[(-1,-1)]]
-        
+
       it "works" $ do
         let input = [".#..##.###...#######"
                     ,"##.############..##."
@@ -235,7 +236,7 @@ main =
             stars = Day10.parse input
             (sc, (x, y)) = Day10.scoreAndBestSpot stars
             as = Day10.sortedAlignmentSets (x, y) stars
-        (x, y, sc) `shouldBe` (11, 13, 211) 
+        (x, y, sc) `shouldBe` (11, 13, 211)
 
         Day10.cyclicTake 1 as `shouldBe` [(11 - x, 12 - y)]
         (as & Day10.cyclicDrop 1 & Day10.cyclicTake 1) `shouldBe` [(12 - x, 1 - y)]
@@ -283,12 +284,12 @@ main =
                             ,Day12.moon0 2 (-10) (-7)
                             ,Day12.moon0 4 (-8) 8
                             ,Day12.moon0 3 5 (-1)
-                            ]         
+                            ]
         (head . drop 1) moons' `shouldBe` [Day12.moon (2, -1, 1) (3, -1, -1)
                                           ,Day12.moon (3, -7, -4) (1, 3, 3)
                                           ,Day12.moon (1, -7, 5) (-3, 1, -3)
                                           ,Day12.moon (2, 2, 0) (-1, -3, 1)
-                                          ]         
+                                          ]
       it "computes energy" $ do
         (moons' & drop 10 & head & map Day12.totalEnergy & sum) `shouldBe` 179
 
@@ -307,11 +308,11 @@ main =
             y0 = ys' & drop 10 & head
             z0 = zs' & drop 10 & head
         Day12.totalEnergy' x0 y0 z0 `shouldBe` 179
-        
+
         (xs' & drop 2772 & head) `shouldBe` xs
         (ys' & drop 2772 & head) `shouldBe` ys
         (zs' & drop 2772 & head) `shouldBe` zs
-        
+
         let cx = Day12.findCycle xs'
             cy = Day12.findCycle ys'
             cz = Day12.findCycle zs'
@@ -678,8 +679,182 @@ main =
 {-
     describe "Day21" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"
     describe "Day21b" $ do it "works" $ do Day6.day6b [] `shouldBe` "hello world"
-    describe "Day22" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"
-    describe "Day22b" $ do it "works" $ do Day6.day6b [] `shouldBe` "hello world"
+-}
+
+
+    describe "Day22" $ do
+      it "deals into new" $ do
+        Day22.perform (Day22.DealNew) [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] `shouldBe` [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+
+      it "cuts positively" $ do
+        Day22.perform (Day22.Cut 3) [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] `shouldBe` [3, 4, 5, 6, 7, 8, 9, 0, 1, 2]
+
+      it "cuts negatively" $ do
+        Day22.perform (Day22.Cut (-4)) [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] `shouldBe` [6, 7, 8, 9, 0, 1, 2, 3, 4, 5]
+
+      it "deals with increment" $ do
+        Day22.perform (Day22.Deal 3) [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] `shouldBe` [0, 7, 4, 1, 8, 5, 2, 9, 6, 3]
+
+    describe "Day22b" $ do
+      it "deals into new" $ do
+        Day22.undo 9 (Day22.DealNew) 0 `shouldBe` 9
+        Day22.undo 9 (Day22.DealNew) 4 `shouldBe` 5
+        Day22.undo 9 (Day22.DealNew) 9 `shouldBe` 0
+
+      it "cuts positively" $ do
+        Day22.perform (Day22.Cut 3) [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] `shouldBe` [3, 4, 5, 6, 7, 8, 9, 0, 1, 2]
+        Day22.undo 9 (Day22.Cut 3) 0 `shouldBe` 3
+        Day22.undo 9 (Day22.Cut 3) 1 `shouldBe` 4
+        Day22.undo 9 (Day22.Cut 3) 9 `shouldBe` 2
+        Day22.undo 9 (Day22.Cut 3) 7 `shouldBe` 0
+
+
+      it "cuts negatively" $ do
+        Day22.perform (Day22.Cut (-4)) [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] `shouldBe` [6, 7, 8, 9, 0, 1, 2, 3, 4, 5]
+        Day22.undo 9 (Day22.Cut (-4)) 0 `shouldBe` 6
+        Day22.undo 9 (Day22.Cut (-4)) 1 `shouldBe` 7
+        Day22.undo 9 (Day22.Cut (-4)) 9 `shouldBe` 5
+        Day22.undo 9 (Day22.Cut (-4)) 4 `shouldBe` 0
+        Day22.undo 9 (Day22.Cut (-4)) 3 `shouldBe` 9
+
+      it "solves a linear diphantine equation" $ do
+        let trials = [(3, 10), (10007, 26), (2879182472398, 7623487261)]
+            ans = map (\(m, n) -> Day22.solve m n) trials
+            tests = trials `zip` ans
+                  & filter (\((m, n), (x, y)) -> x * m + y * n /= 1)
+        tests `shouldBe` []
+
+        let (x, y) = Day22.solve 3 10
+        x * 3 + y * 10 `shouldBe` 1
+
+      it "deals with increment" $ do
+        Day22.perform (Day22.Deal 3) [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] `shouldBe` [0, 7, 4, 1, 8, 5, 2, 9, 6, 3]
+        Day22.undo 9 (Day22.Deal 3) 0 `shouldBe` 0
+        Day22.undo 9 (Day22.Deal 3) 1 `shouldBe` 7
+        Day22.undo 9 (Day22.Deal 3) 2 `shouldBe` 4
+        Day22.undo 9 (Day22.Deal 3) 3 `shouldBe` 1
+        Day22.undo 9 (Day22.Deal 3) 4 `shouldBe` 8
+        Day22.undo 9 (Day22.Deal 3) 5 `shouldBe` 5
+        Day22.undo 9 (Day22.Deal 3) 6 `shouldBe` 2
+        Day22.undo 9 (Day22.Deal 3) 7 `shouldBe` 9
+        Day22.undo 9 (Day22.Deal 3) 8 `shouldBe` 6
+        Day22.undo 9 (Day22.Deal 3) 9 `shouldBe` 3
+
+    describe "Day22b via coefficients" $ do
+      it "deals into new" $ do
+        let (a, b) = Day22.undoCoeff 9 (Day22.DealNew) (1, 0)
+        Day22.applyCoeff 9 (a, b) 0 `shouldBe` 9
+        Day22.applyCoeff 9 (a, b) 4 `shouldBe` 5
+        Day22.applyCoeff 9 (a, b) 9 `shouldBe` 0
+
+      it "cuts positively" $ do
+        let (a, b) = Day22.undoCoeff 9 (Day22.Cut 3) (1, 0)
+        Day22.applyCoeff 9 (a, b) 0 `shouldBe` 3
+        Day22.applyCoeff 9 (a, b) 1 `shouldBe` 4
+        Day22.applyCoeff 9 (a, b) 9 `shouldBe` 2
+        Day22.applyCoeff 9 (a, b) 7 `shouldBe` 0
+
+      it "cuts negatively" $ do
+        let (a, b) = Day22.undoCoeff 9 (Day22.Cut (-4)) (1, 0)
+        Day22.applyCoeff 9 (a, b) 0 `shouldBe` 6
+        Day22.applyCoeff 9 (a, b) 1 `shouldBe` 7
+        Day22.applyCoeff 9 (a, b) 9 `shouldBe` 5
+        Day22.applyCoeff 9 (a, b) 4 `shouldBe` 0
+        Day22.applyCoeff 9 (a, b) 3 `shouldBe` 9
+
+      it "solves a linear diphantine equation" $ do
+        let trials = [(3, 10), (10007, 26), (2879182472398, 7623487261)]
+            ans = map (\(m, n) -> Day22.solve m n) trials
+            tests = trials `zip` ans
+                  & filter (\((m, n), (x, y)) -> x * m + y * n /= 1)
+        tests `shouldBe` []
+
+        let (x, y) = Day22.solve 3 10
+        x * 3 + y * 10 `shouldBe` 1
+
+      it "deals with increment" $ do
+        let (a, b) = Day22.undoCoeff 9 (Day22.Deal 3) (1, 0)
+        Day22.applyCoeff 9 (a, b) 0 `shouldBe` 0
+        Day22.applyCoeff 9 (a, b) 1 `shouldBe` 7
+        Day22.applyCoeff 9 (a, b) 2 `shouldBe` 4
+        Day22.applyCoeff 9 (a, b) 3 `shouldBe` 1
+        Day22.applyCoeff 9 (a, b) 4 `shouldBe` 8
+        Day22.applyCoeff 9 (a, b) 5 `shouldBe` 5
+        Day22.applyCoeff 9 (a, b) 6 `shouldBe` 2
+        Day22.applyCoeff 9 (a, b) 7 `shouldBe` 9
+        Day22.applyCoeff 9 (a, b) 8 `shouldBe` 6
+        Day22.applyCoeff 9 (a, b) 9 `shouldBe` 3
+
+      it "applies two transformations" $ do
+        let firsts = [Day22.Cut 1, Day22.DealNew, Day22.Deal 3, Day22.Cut 3, Day22.Cut (-4)]
+            seconds = [Day22.DealNew, Day22.Deal 3, Day22.Cut 3, Day22.Cut (-4)]
+            comb = [(first, second) | first <- firsts, second <- seconds]
+            cards0 = [0..9]
+            results = [(first, second,
+                        (a1, b1), (a2, b2), (a2', b2'),
+                        cards1, cards2) |
+                         (first, second) <- comb,
+                         let (a1, b1) = Day22.undoCoeff 9 second (1, 0),
+                         let (a2, b2) = Day22.undoCoeff 9 first (a1, b1),
+                         let (a', b') = Day22.undoCoeff 9 first (1, 0),
+                         let (a2', b2') = Day22.applyThen 9 (a1, b1) (a', b'),
+                         let cards1 = Day22.perform first cards0,
+                         let cards2 = Day22.perform second cards1
+                         ]
+            trials = results
+                   & filter (\(first, second, (a1, b1), (a2, b2), (a2', b2'), _, _) -> (a2, b2) /= (a2', b2'))
+            trials2 = results
+                   & filter (\(_, _, _, (a2, b2), _, _, cards2) ->
+                              let pcs = [0..] `zip` cards2
+                                  pos0 = [(Day22.applyCoeff 9 (a2, b2) p, c) | (p, c) <- pcs]
+                              in filter (\(p1, p2) -> p1 /= p2) pos0 /= [])
+        trials `shouldBe` []
+        trials2 `shouldBe` []
+
+      let ops = [Day22.Cut 1, Day22.DealNew, Day22.Deal 3, Day22.Cut 3, Day22.Cut (-4)]
+          powers = [0..9]
+          comb = [(op, power) | op <- ops, power <- powers]
+          cards0 = [0..9]
+          results = [(op, power,
+                      (a1, b1), (an, bn), (am, bm),
+                      cards1) |
+                       (op, power) <- comb,
+                       let cards1 = iterate (Day22.perform op) cards0 !! power,
+                       let (a1, b1) = Day22.undoCoeff 9 op (1, 0),
+                       let (an, bn) = Day22.applyPower 9 (a1, b1) power,
+                       let (am, bm) = iterate (Day22.applyThen 9 (a1, b1)) (1, 0) !! power]
+
+      it "sanity-checks the repeated unapplications" $ do
+        {- sanity-check the slow repeated applications -}
+        let checks = results
+                   & filter (\(_, _, _, _, (am, bm), cards2) ->
+                              let pcs = [0..] `zip` cards2
+                                  pos0 = [(Day22.applyCoeff 9 (am, bm) p, c) | (p, c) <- pcs]
+                              in filter (\(p1, p2) -> p1 /= p2) pos0 /= [])
+        checks `shouldBe` []
+
+      it "correctly computes powers of applications" $ do
+        {- the applications raised to a power should be the same -}
+        let trials = results
+                   & filter (\(_, _, _, (an, bn), (am, bm), _) -> (an, bn) /= (am, bm))
+        trials `shouldBe` []
+      
+      it "correctly uses powers to undo a shuffle" $ do
+        {- their results should trivially also unshuffle the cards -}
+        let trials = results
+                   & filter (\(_, _, _, (an, bn), _, cards2) ->
+                              let pcs = [0..] `zip` cards2
+                                  pos0 = [(Day22.applyCoeff 9 (an, bn) p, c) | (p, c) <- pcs]
+                              in filter (\(p1, p2) -> p1 /= p2) pos0 /= [])
+        trials `shouldBe` []
+
+
+
+
+--    describe "Day22b" $ do it "works" $ do Day6.day6b [] `shouldBe` "hello world"
+
+
+{--
     describe "Day23" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"
     describe "Day23b" $ do it "works" $ do Day6.day6b [] `shouldBe` "hello world"
     describe "Day24" $ do it "works" $ do Day6.day6 [] `shouldBe` "hello world"

@@ -202,31 +202,6 @@ debugger0 prog pc inputs watched = do
     addWatch a = debugger0 prog pc inputs (Set.insert a watched)
 
 
-infixl 8 <<<<
-(<<<<) :: ReadP p1 -> ReadP p2 -> ReadP p1
-p1 <<<< p2 = do
-  x <- p1
-  _ <- p2
-  return x
-
-infixl 8 >>>>
-(>>>>) :: ReadP p1 -> ReadP p2 -> ReadP p2
-p1 >>>> p2 = do
-  _ <- p1
-  p2
-
-infixl 6 <<>>
-(<<>>) :: ReadP p1 -> ReadP p2 -> ReadP (p1, p2)
-p1 <<>> p2 = do
-  x <- p1
-  y <- p2
-  return (x, y)
-
-infixl 8 <<!!
-(<<!!) :: ReadP p1 -> (p1 -> p2) -> ReadP p2
-p1 <<!! f = do
-  x <- p1
-  return $ f x
 
   
 parseInputs parser s =

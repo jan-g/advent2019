@@ -5,6 +5,10 @@ module Lib
     , intParser
     , drawMapWith
     , mapReverse
+    , (<<<<)
+    , (>>>>)
+    , (<<>>)
+    , (<<!!)
     ) where
 
 import Data.Array
@@ -43,3 +47,30 @@ drawMapWith f m =
 
 mapReverse :: (Ord v, Ord k) => Map.Map k v -> Map.Map v (Set.Set k)
 mapReverse m = foldl (\m (k,v) -> Map.insertWith Set.union v (Set.singleton k) m) Map.empty (Map.toList m)
+
+
+infixl 8 <<<<
+(<<<<) :: ReadP p1 -> ReadP p2 -> ReadP p1
+p1 <<<< p2 = do
+  x <- p1
+  _ <- p2
+  return x
+
+infixl 8 >>>>
+(>>>>) :: ReadP p1 -> ReadP p2 -> ReadP p2
+p1 >>>> p2 = do
+  _ <- p1
+  p2
+
+infixl 6 <<>>
+(<<>>) :: ReadP p1 -> ReadP p2 -> ReadP (p1, p2)
+p1 <<>> p2 = do
+  x <- p1
+  y <- p2
+  return (x, y)
+
+infixl 8 <<!!
+(<<!!) :: ReadP p1 -> (p1 -> p2) -> ReadP p2
+p1 <<!! f = do
+  x <- p1
+  return $ f x
