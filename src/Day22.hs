@@ -263,8 +263,15 @@ day22b ls =
 {- p -> (a1p + b1) -> (a2(a1p + b1) + b2)-}
 applyThen n (a1, b1) (a2, b2) = (a1 * a2 `mod` (n+1), (a2 * b1 + b2) `mod` (n+1))
 
-applyPower n (a, b) 0 = (1, 0) 
-applyPower n (a, b) 1 = (a, b)
+{- squared: applyThen n (a, b) (a, b) = (a * a `mod` (n+1), (a * b + b) `mod` (n+1)) -}
+{- cubed:   applyThen n (a, b) (squared) = (a * a * a, a * a * b + a * b + b) 
+            applyThen n (squared) (a, b) = (a * a * a, a * (a * b + b) + b)
+                                         = (...      , a * a * b + a * b + b)
+                                         ... as we'd hope
+            -}
+
+
+
 applyPower n (a, b) pow
   | pow == 0 = (1, 0)
   | pow == 1 = (a, b)
@@ -273,7 +280,10 @@ applyPower n (a, b) pow
           (a1, b1) = applyPower n (a, b) unit
           (a2, b2) = applyThen n (a, b) (a, b)
           (ah, bh) = applyPower n (a2, b2) (pow `div` 2)
-      in  applyThen n (ah, bh) (a1, b1)
+          (ap, bp) = applyThen n (ah, bh) (a1, b1)
+          (ap', bp') = applyThen n (a1, b1) (ah, bh)
+      in  if (ap, bp) == (ap', bp') then (ap, bp)
+          else error $ show ("pow=", pow, "a1,b1", (a1, b1), "ah, bh", (ah, bh), "ap,bp", (ap, bp), "ap'bp'", (ap', bp'))
 
 {-
   dealNew: (ap + b) -> -(ap + b) = (-ap - b)
