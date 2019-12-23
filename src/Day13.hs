@@ -39,7 +39,7 @@ Start the game. How many block tiles are on the screen when the game exits?
 
 day13 ls =
   let prog = parse . head $ ls
-      output = run prog [] & (\(_, o, _) -> o) & chunksOf 3
+      output = run prog [] & (\(_, _, o, _) -> o) & chunksOf 3
       screen = foldl (\m [x, y, t] -> Map.insert (x, y) t m) Map.empty output
   in  Map.foldl (\a t -> if t == 2 then a + 1 else a) 0 screen
 
@@ -83,13 +83,13 @@ doUpdate sc output = foldl screenUpdate sc (chunksOf 3 output)
 
 day13b ls =
   let prog = ls & head & parse
-      prog' = set prog 0 2
+      prog' = poke prog 0 2
       sc = screen0
   in  playGame prog' sc []
 
 
 playGame prog sc input =
-  let (prog', output, cont) = run prog input
+  let (prog', _, output, cont) = run prog input
       sc' = doUpdate sc output
   in  if blockCount sc' == 0 then score sc'
       else if not cont then score sc'

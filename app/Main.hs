@@ -84,6 +84,20 @@ main = do
     print ans
     return ()
 
+  else if head args == "day23"
+  then do
+    print "day 23"
+    ans <- day23 ls
+    print ans
+    return ()
+
+  else if head args == "day23b"
+  then do
+    print "day 23b"
+    ans <- day23b ls
+    print ans
+    return ()
+
     
   else do
     let action = case args !! 0 of
@@ -161,8 +175,8 @@ main = do
                    "day21b" -> \ls -> "hello world"
 --                   "day22" -> show . day22
                    "day22b" -> show . day22b
-                   "day23" -> show . day23
-                   "day23b" -> show . day23b
+--                   "day23" -> show . day23
+--                   "day23b" -> show . day23b
                    "day24" -> show . day24
                    "day24b" -> show . day24b
     putStrLn (action ls)

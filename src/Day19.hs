@@ -49,7 +49,7 @@ day19 ls =
       grid = [((x, y), if c == 0 then '.' else '#')
              | y <- [0..y1],
                x <- [0..x1],
-               let (_, [c], _) = run prog [x, y]
+               let (_, _, [c], _) = run prog [x, y]
              ] & Map.fromList
       counts = Map.filter (== '#') grid & Map.size
   in  (drawMapWith (\_ c -> fromJust c) grid & unlines,
@@ -110,7 +110,7 @@ day19b ls =
       grid = [((x, y), if c == 0 then '.' else '#')
              | y <- [0..y1],
                x <- [0..x1],
-               let (_, [c], _) = run prog [x, y]
+               let (_, _, [c], _) = run prog [x, y]
              ] & Map.fromList
       counts = Map.filter (== '#') grid & Map.size
       y = y1
@@ -129,8 +129,8 @@ day19b ls =
    (where y increases downward); so this scan works fine. YMMV. -}
 scanDown prog y left right =
   let y' = succ y
-      (_, [belowLeft], _) = run prog [left, y']
+      (_, _, [belowLeft], _) = run prog [left, y']
       left' = if belowLeft == 1 then left else succ left
-      (_, [belowRight], _) = run prog [succ right, y']
+      (_, _, [belowRight], _) = run prog [succ right, y']
       right' = if belowRight == 1 then succ right else right
   in  [(y, left, right)] ++ scanDown prog y' left' right'

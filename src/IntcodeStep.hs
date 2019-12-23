@@ -1,4 +1,10 @@
-module IntcodeStep where
+module IntcodeStep (
+  parse,
+  run, run0,
+  Prog,
+  Addr,
+  peek, poke
+) where
 
 
 import Data.Function ((&))
@@ -7,8 +13,8 @@ import Data.Array
 import qualified Data.Map.Lazy as Map
 import Lib
 
-
-data Prog = Prog (Map.Map Integer Integer) Integer
+type Addr = Integer
+data Prog = Prog (Map.Map Addr Integer) Addr
 
 parse ns = ns
          & splitOn ","
@@ -19,8 +25,8 @@ toProg :: [Integer] -> Prog
 toProg ns = Prog (Map.fromAscList $ [0..] `zip` ns) 0
 
 
-set (Prog a o) addr value = Prog (Map.insert addr value a) o
-get (Prog a o) addr = Map.findWithDefault 0 addr a
+poke (Prog a o) addr value = Prog (Map.insert addr value a) o
+peek (Prog a o) addr = Map.findWithDefault 0 addr a
 addRelative (Prog a o) offset = Prog a (o + offset)
 getRelative (Prog a o) = o
 
@@ -28,14 +34,14 @@ getRelative (Prog a o) = o
 run prog inputs = run0 0 prog inputs []
 
 run0 pc prog inputs outputs =
-  let op = get prog pc `mod` 100
+  let op = peek prog pc `mod` 100
   in case op of
-        99 -> (prog, outputs, False)
+        99 -> (prog, pc, outputs, False)
         1 -> run0 (pc + 4) (apply (+)) inputs outputs
         2 -> run0 (pc + 4) (apply (*)) inputs outputs
         3 -> if inputs /= []
-             then run0 (pc + 2) (set prog (addr 1) (head inputs)) (tail inputs) outputs
-             else (prog, outputs, True)
+             then run0 (pc + 2) (poke prog (addr 1) (head inputs)) (tail inputs) outputs
+             else (prog, pc, outputs, True)
         4 -> run0 (pc + 2) prog inputs (outputs ++ [arg 1])
         5 -> run0 (if arg 1 /= 0 then arg 2 else pc + 3) prog inputs outputs
         6 -> run0 (if arg 1 == 0 then arg 2 else pc + 3) prog inputs outputs
@@ -45,16 +51,16 @@ run0 pc prog inputs outputs =
         _ -> error ("not possible " ++ (show pc) ++ " " ++ (show op))
   where
     arg n =
-      let inst = get prog pc
-          val = get prog (pc + n)
+      let inst = peek prog pc
+          val = peek prog (pc + n)
           mode = inst `div` (10 ^ (n + 1)) `mod` 10
       in  case mode of
-          0 -> get prog val
+          0 -> peek prog val
           1 -> val
-          2 -> get prog (val + getRelative prog)  
+          2 -> peek prog (val + getRelative prog)
     addr n =
-      let inst = get prog pc
-          val = get prog (pc + n)
+      let inst = peek prog pc
+          val = peek prog (pc + n)
           mode = inst `div` (10 ^ (n + 1)) `mod` 10
       in  case mode of
           0 -> val
@@ -63,16 +69,16 @@ run0 pc prog inputs outputs =
       let a1 = arg 1
           a2 = arg 2
           to = addr 3
-       in set prog to (op a1 a2)
+       in poke prog to (op a1 a2)
 
 
 data I = Add A A A
        | Mul A A A
-       | Input A 
+       | Input A
        | Output A
        | JTrue A A
-       | JFalse A A 
-       | Lt A A A 
+       | JFalse A A
+       | Lt A A A
        | Eq A A A
        | AddOffs A
        | Halt

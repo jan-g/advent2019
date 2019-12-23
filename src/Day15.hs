@@ -150,7 +150,7 @@ runRobotBreadth ship progMap =
         let (target@(x',y'):prev@(x,y):_) = head path & reverse {- nearest target cell, previous coord -}
             prevProg = progMap Map.! prev   {- use the state of the computer at that point -}
             (dx,dy) = (signum $ x' - x, signum $ y' - y)
-            (newProg, [result], _) = run prevProg [dxdyToDir (dx,dy)]
+            (newProg, _, [result], _) = run prevProg [dxdyToDir (dx,dy)]
             newCell = resultToCell result
             ship' = Map.insert target newCell ship
          in runRobotBreadth ship' (Map.insert target newProg progMap)
