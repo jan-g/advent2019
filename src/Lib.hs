@@ -9,6 +9,8 @@ module Lib
     , (>>>>)
     , (<<>>)
     , (<<!!)
+    , loadMap
+    , loadMapWith
     ) where
 
 import Data.Array
@@ -16,6 +18,7 @@ import Data.Char
 import Text.ParserCombinators.ReadP
 import qualified Data.Map as Map
 import qualified Data.Set as Set
+import Data.Function ((&))
 
 loadLines fn = do
   contents <- readFile fn
@@ -74,3 +77,9 @@ infixl 8 <<!!
 p1 <<!! f = do
   x <- p1
   return $ f x
+
+loadMap :: (Num a, Ord a, Enum a) => [String] -> Map.Map (a, a) Char
+loadMap ls = [((x, y), c) | (y, line) <- [0..] `zip` ls, (x, c) <- [0..] `zip` line] & Map.fromList
+
+loadMapWith :: (Num a, Ord a, Enum a) => ((a, a) -> Char -> b) -> [String] -> Map.Map (a, a) b
+loadMapWith f ls = loadMap ls & Map.mapWithKey f

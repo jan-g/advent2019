@@ -86,14 +86,13 @@ What is the biodiversity rating for the first layout that appears twice?
 type Grid = Map.Map (Integer, Integer) Int
 
 parse :: [String] -> Grid
-parse ls = [((x, y), b) | (y, line) <- [0..] `zip` ls,
-                          (x, c) <- [0..] `zip` line,
-                          let b = if c == '#' then 1 else 0]
-         & Map.fromList
+parse ls = loadMapWith (\_ c -> if c == '#' then 1 else 0) ls
 
 at grid (x, y) = case Map.lookup (x, y) grid of Nothing -> 0; Just b -> b
 
-draw grid = unlines $ drawMapWith (\_ (Just b) -> if b == 1 then '#' else '.') grid
+draw grid = unlines $ drawMapWith (\_ b -> case b of
+                                              Just 1 -> '#'
+                                              otherwise -> '.') grid
 
 next grid = Map.mapWithKey (\(x, y) b ->
                              let n = [(x-1, y), (x+1, y), (x, y-1), (x, y+1)]
@@ -366,7 +365,8 @@ next' grid =
                         let n = adj' (x, y, z) & map (at' grid) & sum,
                         let b = case at' grid (x, y, z) of
                                   0 -> if n == 1 || n == 2 then 1 else 0
-                                  1 -> if n == 1 then 1 else 0]
+                                  1 -> if n == 1 then 1 else 0,
+                        b /= 0]
        & Map.fromList
 
 parse' ls = parse ls
