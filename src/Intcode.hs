@@ -101,12 +101,14 @@ instance Show I where
 data A = Ind Integer
        | Abs Integer
        | Rel Integer
+       | Unknown Integer
   deriving (Eq)
 
 instance Show A where
   show (Ind x) = "r" ++ (show x)
   show (Abs x) = (show x)
   show (Rel x) = "r(@ + " ++ (show x) ++ ")"
+  show (Unknown x) = "?" ++ (show x)
 
 dump (Prog prog offs) o =
   decode (Map.toAscList prog & drop o) []
@@ -124,6 +126,7 @@ decode ((addr, v):(_, a):(_, b):(_, c):ps) d
            | v `mod` 10 == 0 = Ind x
            | v `mod` 10 == 1 = Abs x
            | v `mod` 10 == 2 = Rel x
+           | otherwise       = Unknown x
 decode ((addr, v):(_, a):(_, b):ps) d
   | v `mod` 100 == 5 = decode ps (d ++ [(addr, [v, a, b], JTrue a' b')])
   | v `mod` 100 == 6 = decode ps (d ++ [(addr, [v, a, b], JFalse a' b')])
@@ -133,6 +136,7 @@ decode ((addr, v):(_, a):(_, b):ps) d
            | v `mod` 10 == 0 = Ind x
            | v `mod` 10 == 1 = Abs x
            | v `mod` 10 == 2 = Rel x
+           | otherwise       = Unknown x
 decode ((addr, v):(_, a):ps) d
   | v `mod` 100 == 3 = decode ps (d ++ [(addr, [v, a], Input a')])
   | v `mod` 100 == 4 = decode ps (d ++ [(addr, [v, a], Output a')])
@@ -142,6 +146,7 @@ decode ((addr, v):(_, a):ps) d
            | v `mod` 10 == 0 = Ind x
            | v `mod` 10 == 1 = Abs x
            | v `mod` 10 == 2 = Rel x
+           | otherwise       = Unknown x
 decode ((addr, v):ps) d
   | v `mod` 100 == 99 = decode ps (d ++ [(addr, [v], Halt)])
   | otherwise         = decode ps (d ++ [(addr, [v], Value v)])

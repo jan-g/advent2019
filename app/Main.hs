@@ -76,7 +76,7 @@ main = do
     ans <- day21b ls
     print ans
     return ()
-  
+
   else if head args == "day22"
   then do
     print "day 22"
@@ -98,7 +98,7 @@ main = do
     print ans
     return ()
 
-    
+
   else do
     let action = case args !! 0 of
                    "day1" -> show . day1
@@ -177,7 +177,9 @@ main = do
                    "day22b" -> show . day22b
 --                   "day23" -> show . day23
 --                   "day23b" -> show . day23b
-                   "day24" -> show . day24
+                   "day24" -> \ls ->
+                     let (ans, result) = day24 ls
+                     in  ans ++ "\n" ++ show result
                    "day24b" -> show . day24b
     putStrLn (action ls)
 
@@ -200,4 +202,3 @@ day17Dump ls = do
 debug ls = do
   let prog = Intcode.parse $ head ls
   IS.debugger prog 0 []
-  

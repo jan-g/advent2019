@@ -28,6 +28,7 @@ import qualified Day17
 import qualified Day18
 import qualified Day20
 import qualified Day22
+import qualified Day24
 
 
 main :: IO ()
@@ -838,7 +839,7 @@ main =
         let trials = results
                    & filter (\(_, _, _, (an, bn), (am, bm), _) -> (an, bn) /= (am, bm))
         trials `shouldBe` []
-      
+
       it "correctly uses powers to undo a shuffle" $ do
         {- their results should trivially also unshuffle the cards -}
         let trials = results
@@ -848,8 +849,20 @@ main =
                               in filter (\(p1, p2) -> p1 /= p2) pos0 /= [])
         trials `shouldBe` []
 
-
-
+    describe "Day 24" $ do
+      it "should run the example" $ do
+        let input = ["....#"
+                    ,"#..#."
+                    ,"#.?##"
+                    ,"..#.."
+                    ,"#...."
+                    ]
+            grid0 = Day24.parse' input
+            grid10 = iterate Day24.next' grid0 !! 10
+        putStrLn $ Day24.draw' grid0
+        putStrLn "..."
+        putStrLn $ Day24.draw' grid10
+        Map.foldl (+) 0 grid10 `shouldBe` 99
 
 --    describe "Day22b" $ do it "works" $ do Day6.day6b [] `shouldBe` "hello world"
 
